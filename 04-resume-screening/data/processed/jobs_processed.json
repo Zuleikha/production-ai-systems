@@ -1,0 +1,374 @@
+[
+  {
+    "title": "data scientist",
+    "company": "devcompany",
+    "required_skills": [
+      "Python",
+      "Docker",
+      "React",
+      "SQL"
+    ],
+    "min_experience": 2,
+    "max_experience": 9,
+    "skills_count": 4,
+    "experience_range": 7,
+    "processed": true
+  },
+  {
+    "title": "software engineer",
+    "company": "datasoft",
+    "required_skills": [
+      "SQL",
+      "AWS",
+      "Java",
+      "Docker"
+    ],
+    "min_experience": 4,
+    "max_experience": 5,
+    "skills_count": 4,
+    "experience_range": 1,
+    "processed": true
+  },
+  {
+    "title": "software engineer",
+    "company": "devcompany",
+    "required_skills": [
+      "Java",
+      "React",
+      "AWS",
+      "Python"
+    ],
+    "min_experience": 5,
+    "max_experience": 5,
+    "skills_count": 4,
+    "experience_range": 0,
+    "processed": true
+  },
+  {
+    "title": "software engineer",
+    "company": "techcorp",
+    "required_skills": [
+      "Java",
+      "React",
+      "SQL"
+    ],
+    "min_experience": 2,
+    "max_experience": 8,
+    "skills_count": 3,
+    "experience_range": 6,
+    "processed": true
+  },
+  {
+    "title": "software engineer",
+    "company": "techcorp",
+    "required_skills": [
+      "Java",
+      "AWS",
+      "Python",
+      "Docker",
+      "SQL"
+    ],
+    "min_experience": 1,
+    "max_experience": 6,
+    "skills_count": 5,
+    "experience_range": 5,
+    "processed": true
+  },
+  {
+    "title": "software engineer",
+    "company": "techcorp",
+    "required_skills": [
+      "Java",
+      "AWS",
+      "React"
+    ],
+    "min_experience": 5,
+    "max_experience": 9,
+    "skills_count": 3,
+    "experience_range": 4,
+    "processed": true
+  },
+  {
+    "title": "devops engineer",
+    "company": "techcorp",
+    "required_skills": [
+      "SQL",
+      "React",
+      "Java",
+      "Python"
+    ],
+    "min_experience": 3,
+    "max_experience": 6,
+    "skills_count": 4,
+    "experience_range": 3,
+    "processed": true
+  },
+  {
+    "title": "software engineer",
+    "company": "devcompany",
+    "required_skills": [
+      "React",
+      "AWS",
+      "SQL",
+      "Java"
+    ],
+    "min_experience": 3,
+    "max_experience": 6,
+    "skills_count": 4,
+    "experience_range": 3,
+    "processed": true
+  },
+  {
+    "title": "devops engineer",
+    "company": "datasoft",
+    "required_skills": [
+      "SQL",
+      "AWS",
+      "Python",
+      "Docker",
+      "Java"
+    ],
+    "min_experience": 1,
+    "max_experience": 9,
+    "skills_count": 5,
+    "experience_range": 8,
+    "processed": true
+  },
+  {
+    "title": "data scientist",
+    "company": "devcompany",
+    "required_skills": [
+      "Python",
+      "SQL",
+      "React"
+    ],
+    "min_experience": 4,
+    "max_experience": 6,
+    "skills_count": 3,
+    "experience_range": 2,
+    "processed": true
+  },
+  {
+    "title": "data scientist",
+    "company": "datasoft",
+    "required_skills": [
+      "Python",
+      "SQL",
+      "AWS",
+      "Docker",
+      "React"
+    ],
+    "min_experience": 3,
+    "max_experience": 5,
+    "skills_count": 5,
+    "experience_range": 2,
+    "processed": true
+  },
+  {
+    "title": "data scientist",
+    "company": "cloudinc",
+    "required_skills": [
+      "AWS",
+      "SQL",
+      "Python",
+      "Docker"
+    ],
+    "min_experience": 1,
+    "max_experience": 5,
+    "skills_count": 4,
+    "experience_range": 4,
+    "processed": true
+  },
+  {
+    "title": "software engineer",
+    "company": "datasoft",
+    "required_skills": [
+      "Docker",
+      "Java",
+      "React",
+      "Python",
+      "AWS"
+    ],
+    "min_experience": 1,
+    "max_experience": 7,
+    "skills_count": 5,
+    "experience_range": 6,
+    "processed": true
+  },
+  {
+    "title": "data scientist",
+    "company": "devcompany",
+    "required_skills": [
+      "React",
+      "Python",
+      "AWS",
+      "SQL"
+    ],
+    "min_experience": 4,
+    "max_experience": 8,
+    "skills_count": 4,
+    "experience_range": 4,
+    "processed": true
+  },
+  {
+    "title": "software engineer",
+    "company": "techcorp",
+    "required_skills": [
+      "Docker",
+      "SQL",
+      "Java",
+      "React"
+    ],
+    "min_experience": 1,
+    "max_experience": 8,
+    "skills_count": 4,
+    "experience_range": 7,
+    "processed": true
+  },
+  {
+    "title": "software engineer",
+    "company": "techcorp",
+    "required_skills": [
+      "AWS",
+      "Docker",
+      "Java"
+    ],
+    "min_experience": 4,
+    "max_experience": 9,
+    "skills_count": 3,
+    "experience_range": 5,
+    "processed": true
+  },
+  {
+    "title": "software engineer",
+    "company": "techcorp",
+    "required_skills": [
+      "Python",
+      "React",
+      "AWS",
+      "SQL"
+    ],
+    "min_experience": 3,
+    "max_experience": 5,
+    "skills_count": 4,
+    "experience_range": 2,
+    "processed": true
+  },
+  {
+    "title": "devops engineer",
+    "company": "devcompany",
+    "required_skills": [
+      "React",
+      "AWS",
+      "Java",
+      "SQL"
+    ],
+    "min_experience": 4,
+    "max_experience": 9,
+    "skills_count": 4,
+    "experience_range": 5,
+    "processed": true
+  },
+  {
+    "title": "data scientist",
+    "company": "datasoft",
+    "required_skills": [
+      "Docker",
+      "AWS",
+      "Python"
+    ],
+    "min_experience": 1,
+    "max_experience": 9,
+    "skills_count": 3,
+    "experience_range": 8,
+    "processed": true
+  },
+  {
+    "title": "devops engineer",
+    "company": "techcorp",
+    "required_skills": [
+      "Docker",
+      "AWS",
+      "Java",
+      "Python"
+    ],
+    "min_experience": 1,
+    "max_experience": 9,
+    "skills_count": 4,
+    "experience_range": 8,
+    "processed": true
+  },
+  {
+    "title": "devops engineer",
+    "company": "techcorp",
+    "required_skills": [
+      "Docker",
+      "AWS",
+      "SQL"
+    ],
+    "min_experience": 3,
+    "max_experience": 8,
+    "skills_count": 3,
+    "experience_range": 5,
+    "processed": true
+  },
+  {
+    "title": "software engineer",
+    "company": "cloudinc",
+    "required_skills": [
+      "SQL",
+      "AWS",
+      "Docker"
+    ],
+    "min_experience": 1,
+    "max_experience": 6,
+    "skills_count": 3,
+    "experience_range": 5,
+    "processed": true
+  },
+  {
+    "title": "software engineer",
+    "company": "devcompany",
+    "required_skills": [
+      "React",
+      "Python",
+      "Java"
+    ],
+    "min_experience": 4,
+    "max_experience": 10,
+    "skills_count": 3,
+    "experience_range": 6,
+    "processed": true
+  },
+  {
+    "title": "data scientist",
+    "company": "techcorp",
+    "required_skills": [
+      "Java",
+      "Python",
+      "React",
+      "Docker",
+      "SQL"
+    ],
+    "min_experience": 5,
+    "max_experience": 5,
+    "skills_count": 5,
+    "experience_range": 0,
+    "processed": true
+  },
+  {
+    "title": "software engineer",
+    "company": "datasoft",
+    "required_skills": [
+      "Java",
+      "AWS",
+      "React",
+      "Python"
+    ],
+    "min_experience": 3,
+    "max_experience": 9,
+    "skills_count": 4,
+    "experience_range": 6,
+    "processed": true
+  }
+]

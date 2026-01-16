@@ -1,0 +1,122 @@
+[
+  {
+    "name": "john smith",
+    "role_category": "devops engineer",
+    "skills": [
+      "Docker",
+      "AWS",
+      "Java"
+    ],
+    "experience_years": 10,
+    "skills_count": 3,
+    "processed": true
+  },
+  {
+    "name": "sarah johnson",
+    "role_category": "software engineer",
+    "skills": [
+      "Python",
+      "React",
+      "SQL"
+    ],
+    "experience_years": 8,
+    "skills_count": 3,
+    "processed": true
+  },
+  {
+    "name": "sarah johnson",
+    "role_category": "software engineer",
+    "skills": [
+      "SQL",
+      "React",
+      "AWS"
+    ],
+    "experience_years": 7,
+    "skills_count": 3,
+    "processed": true
+  },
+  {
+    "name": "lisa davis",
+    "role_category": "software engineer",
+    "skills": [
+      "SQL",
+      "AWS",
+      "React"
+    ],
+    "experience_years": 4,
+    "skills_count": 3,
+    "processed": true
+  },
+  {
+    "name": "lisa davis",
+    "role_category": "devops engineer",
+    "skills": [
+      "AWS",
+      "SQL",
+      "Python"
+    ],
+    "experience_years": 8,
+    "skills_count": 3,
+    "processed": true
+  },
+  {
+    "name": "lisa davis",
+    "role_category": "devops engineer",
+    "skills": [
+      "Java",
+      "SQL",
+      "Python"
+    ],
+    "experience_years": 3,
+    "skills_count": 3,
+    "processed": true
+  },
+  {
+    "name": "mike brown",
+    "role_category": "devops engineer",
+    "skills": [
+      "Docker",
+      "AWS",
+      "Python"
+    ],
+    "experience_years": 1,
+    "skills_count": 3,
+    "processed": true
+  },
+  {
+    "name": "lisa davis",
+    "role_category": "software engineer",
+    "skills": [
+      "Python",
+      "React",
+      "SQL"
+    ],
+    "experience_years": 7,
+    "skills_count": 3,
+    "processed": true
+  },
+  {
+    "name": "sarah johnson",
+    "role_category": "devops engineer",
+    "skills": [
+      "Python",
+      "Java",
+      "AWS"
+    ],
+    "experience_years": 1,
+    "skills_count": 3,
+    "processed": true
+  },
+  {
+    "name": "john smith",
+    "role_category": "devops engineer",
+    "skills": [
+      "Docker",
+      "AWS",
+      "SQL"
+    ],
+    "experience_years": 2,
+    "skills_count": 3,
+    "processed": true
+  }
+]

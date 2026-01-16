@@ -1,0 +1,26 @@
+title,company,required_skills,min_experience,max_experience,skills_count,experience_range,processed
+data scientist,devcompany,"['Python', 'Docker', 'React', 'SQL']",2,9,4,7,True
+software engineer,datasoft,"['SQL', 'AWS', 'Java', 'Docker']",4,5,4,1,True
+software engineer,devcompany,"['Java', 'React', 'AWS', 'Python']",5,5,4,0,True
+software engineer,techcorp,"['Java', 'React', 'SQL']",2,8,3,6,True
+software engineer,techcorp,"['Java', 'AWS', 'Python', 'Docker', 'SQL']",1,6,5,5,True
+software engineer,techcorp,"['Java', 'AWS', 'React']",5,9,3,4,True
+devops engineer,techcorp,"['SQL', 'React', 'Java', 'Python']",3,6,4,3,True
+software engineer,devcompany,"['React', 'AWS', 'SQL', 'Java']",3,6,4,3,True
+devops engineer,datasoft,"['SQL', 'AWS', 'Python', 'Docker', 'Java']",1,9,5,8,True
+data scientist,devcompany,"['Python', 'SQL', 'React']",4,6,3,2,True
+data scientist,datasoft,"['Python', 'SQL', 'AWS', 'Docker', 'React']",3,5,5,2,True
+data scientist,cloudinc,"['AWS', 'SQL', 'Python', 'Docker']",1,5,4,4,True
+software engineer,datasoft,"['Docker', 'Java', 'React', 'Python', 'AWS']",1,7,5,6,True
+data scientist,devcompany,"['React', 'Python', 'AWS', 'SQL']",4,8,4,4,True
+software engineer,techcorp,"['Docker', 'SQL', 'Java', 'React']",1,8,4,7,True
+software engineer,techcorp,"['AWS', 'Docker', 'Java']",4,9,3,5,True
+software engineer,techcorp,"['Python', 'React', 'AWS', 'SQL']",3,5,4,2,True
+devops engineer,devcompany,"['React', 'AWS', 'Java', 'SQL']",4,9,4,5,True
+data scientist,datasoft,"['Docker', 'AWS', 'Python']",1,9,3,8,True
+devops engineer,techcorp,"['Docker', 'AWS', 'Java', 'Python']",1,9,4,8,True
+devops engineer,techcorp,"['Docker', 'AWS', 'SQL']",3,8,3,5,True
+software engineer,cloudinc,"['SQL', 'AWS', 'Docker']",1,6,3,5,True
+software engineer,devcompany,"['React', 'Python', 'Java']",4,10,3,6,True
+data scientist,techcorp,"['Java', 'Python', 'React', 'Docker', 'SQL']",5,5,5,0,True
+software engineer,datasoft,"['Java', 'AWS', 'React', 'Python']",3,9,4,6,True

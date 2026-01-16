@@ -1,0 +1,19 @@
+name: Deploy to Production
+
+on:
+  push:
+    branches: [ main ]
+    tags: [ 'v*' ]
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - uses: actions/checkout@v3
+    
+    - name: Deploy to AWS/GCP
+      run: |
+        echo "Add deployment steps here"
+        # terraform apply
+        # kubectl apply -k deployment/kubernetes/

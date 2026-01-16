@@ -1,0 +1,299 @@
+[
+  {
+    "title": "Data Scientist",
+    "required_skills": [
+      "Python",
+      "Docker",
+      "React",
+      "SQL"
+    ],
+    "min_experience": 2,
+    "max_experience": 9,
+    "company": "DevCompany"
+  },
+  {
+    "title": "Software Engineer",
+    "required_skills": [
+      "SQL",
+      "AWS",
+      "Java",
+      "Docker"
+    ],
+    "min_experience": 4,
+    "max_experience": 5,
+    "company": "DataSoft"
+  },
+  {
+    "title": "Software Engineer",
+    "required_skills": [
+      "Java",
+      "React",
+      "AWS",
+      "Python"
+    ],
+    "min_experience": 5,
+    "max_experience": 5,
+    "company": "DevCompany"
+  },
+  {
+    "title": "Software Engineer",
+    "required_skills": [
+      "Java",
+      "React",
+      "SQL"
+    ],
+    "min_experience": 2,
+    "max_experience": 8,
+    "company": "TechCorp"
+  },
+  {
+    "title": "Software Engineer",
+    "required_skills": [
+      "Java",
+      "AWS",
+      "Python",
+      "Docker",
+      "SQL"
+    ],
+    "min_experience": 1,
+    "max_experience": 6,
+    "company": "TechCorp"
+  },
+  {
+    "title": "Software Engineer",
+    "required_skills": [
+      "Java",
+      "AWS",
+      "React"
+    ],
+    "min_experience": 5,
+    "max_experience": 9,
+    "company": "TechCorp"
+  },
+  {
+    "title": "DevOps Engineer",
+    "required_skills": [
+      "SQL",
+      "React",
+      "Java",
+      "Python"
+    ],
+    "min_experience": 3,
+    "max_experience": 6,
+    "company": "TechCorp"
+  },
+  {
+    "title": "Software Engineer",
+    "required_skills": [
+      "React",
+      "AWS",
+      "SQL",
+      "Java"
+    ],
+    "min_experience": 3,
+    "max_experience": 6,
+    "company": "DevCompany"
+  },
+  {
+    "title": "DevOps Engineer",
+    "required_skills": [
+      "SQL",
+      "AWS",
+      "Python",
+      "Docker",
+      "Java"
+    ],
+    "min_experience": 1,
+    "max_experience": 9,
+    "company": "DataSoft"
+  },
+  {
+    "title": "Data Scientist",
+    "required_skills": [
+      "Python",
+      "SQL",
+      "React"
+    ],
+    "min_experience": 4,
+    "max_experience": 6,
+    "company": "DevCompany"
+  },
+  {
+    "title": "Data Scientist",
+    "required_skills": [
+      "Python",
+      "SQL",
+      "AWS",
+      "Docker",
+      "React"
+    ],
+    "min_experience": 3,
+    "max_experience": 5,
+    "company": "DataSoft"
+  },
+  {
+    "title": "Data Scientist",
+    "required_skills": [
+      "AWS",
+      "SQL",
+      "Python",
+      "Docker"
+    ],
+    "min_experience": 1,
+    "max_experience": 5,
+    "company": "CloudInc"
+  },
+  {
+    "title": "Software Engineer",
+    "required_skills": [
+      "Docker",
+      "Java",
+      "React",
+      "Python",
+      "AWS"
+    ],
+    "min_experience": 1,
+    "max_experience": 7,
+    "company": "DataSoft"
+  },
+  {
+    "title": "Data Scientist",
+    "required_skills": [
+      "React",
+      "Python",
+      "AWS",
+      "SQL"
+    ],
+    "min_experience": 4,
+    "max_experience": 8,
+    "company": "DevCompany"
+  },
+  {
+    "title": "Software Engineer",
+    "required_skills": [
+      "Docker",
+      "SQL",
+      "Java",
+      "React"
+    ],
+    "min_experience": 1,
+    "max_experience": 8,
+    "company": "TechCorp"
+  },
+  {
+    "title": "Software Engineer",
+    "required_skills": [
+      "AWS",
+      "Docker",
+      "Java"
+    ],
+    "min_experience": 4,
+    "max_experience": 9,
+    "company": "TechCorp"
+  },
+  {
+    "title": "Software Engineer",
+    "required_skills": [
+      "Python",
+      "React",
+      "AWS",
+      "SQL"
+    ],
+    "min_experience": 3,
+    "max_experience": 5,
+    "company": "TechCorp"
+  },
+  {
+    "title": "DevOps Engineer",
+    "required_skills": [
+      "React",
+      "AWS",
+      "Java",
+      "SQL"
+    ],
+    "min_experience": 4,
+    "max_experience": 9,
+    "company": "DevCompany"
+  },
+  {
+    "title": "Data Scientist",
+    "required_skills": [
+      "Docker",
+      "AWS",
+      "Python"
+    ],
+    "min_experience": 1,
+    "max_experience": 9,
+    "company": "DataSoft"
+  },
+  {
+    "title": "DevOps Engineer",
+    "required_skills": [
+      "Docker",
+      "AWS",
+      "Java",
+      "Python"
+    ],
+    "min_experience": 1,
+    "max_experience": 9,
+    "company": "TechCorp"
+  },
+  {
+    "title": "DevOps Engineer",
+    "required_skills": [
+      "Docker",
+      "AWS",
+      "SQL"
+    ],
+    "min_experience": 3,
+    "max_experience": 8,
+    "company": "TechCorp"
+  },
+  {
+    "title": "Software Engineer",
+    "required_skills": [
+      "SQL",
+      "AWS",
+      "Docker"
+    ],
+    "min_experience": 1,
+    "max_experience": 6,
+    "company": "CloudInc"
+  },
+  {
+    "title": "Software Engineer",
+    "required_skills": [
+      "React",
+      "Python",
+      "Java"
+    ],
+    "min_experience": 4,
+    "max_experience": 10,
+    "company": "DevCompany"
+  },
+  {
+    "title": "Data Scientist",
+    "required_skills": [
+      "Java",
+      "Python",
+      "React",
+      "Docker",
+      "SQL"
+    ],
+    "min_experience": 5,
+    "max_experience": 5,
+    "company": "TechCorp"
+  },
+  {
+    "title": "Software Engineer",
+    "required_skills": [
+      "Java",
+      "AWS",
+      "React",
+      "Python"
+    ],
+    "min_experience": 3,
+    "max_experience": 9,
+    "company": "DataSoft"
+  }
+]

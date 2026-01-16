@@ -1,0 +1,11 @@
+name,role_category,skills,experience_years,skills_count,processed
+john smith,devops engineer,"['Docker', 'AWS', 'Java']",10,3,True
+sarah johnson,software engineer,"['Python', 'React', 'SQL']",8,3,True
+sarah johnson,software engineer,"['SQL', 'React', 'AWS']",7,3,True
+lisa davis,software engineer,"['SQL', 'AWS', 'React']",4,3,True
+lisa davis,devops engineer,"['AWS', 'SQL', 'Python']",8,3,True
+lisa davis,devops engineer,"['Java', 'SQL', 'Python']",3,3,True
+mike brown,devops engineer,"['Docker', 'AWS', 'Python']",1,3,True
+lisa davis,software engineer,"['Python', 'React', 'SQL']",7,3,True
+sarah johnson,devops engineer,"['Python', 'Java', 'AWS']",1,3,True
+john smith,devops engineer,"['Docker', 'AWS', 'SQL']",2,3,True
