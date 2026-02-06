@@ -1,1 +1,38 @@
+<<<<<<< HEAD
 .env
+=======
+# Environment variables
+.env
+*.env
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+env/
+venv/
+*.egg-info/
+dist/
+build/
+
+# IDEs
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Models and data
+models/*.json
+models/*.pkl
+data/raw/*
+!data/raw/.gitkeep
+
+# Docker
+*.log
+>>>>>>> 90780a4c5daca7c57e666eeb39012a43ef736891
