@@ -1,13 +1,34 @@
-# Environment files
+# Environment variables
 .env
+*.env
 
-# Python cache
+# Python
 __pycache__/
 *.py[cod]
+*$py.class
+*.so
+.Python
+env/
+venv/
+*.egg-info/
+dist/
+build/
+
+# IDEs
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# OS
+.DS_Store
+Thumbs.db
 
 # Models and data
-models/
-data/raw/
+models/*.json
+models/*.pkl
+data/raw/*
+!data/raw/.gitkeep
 
-# Logs
+# Docker
 *.log
