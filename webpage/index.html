@@ -515,18 +515,19 @@
 
                 <div class="project-card">
                     <h3>Pharma AI Portfolio</h3>
-                    <p>Structure-based drug discovery workflows demonstrating AlphaFold integration, molecular docking with AutoDock Vina, and cheminformatics analysis using RDKit. Complete DHFR inhibitor research pipeline from target prediction to binding analysis.</p>
+                    <p>Five-module computational drug discovery toolkit centred on DHFR — spanning ML toxicity prediction, fragment-based design, 3D docking prep, bioactivity classification, and an AlphaFold + Vina structure-based pipeline.</p>
                     <ul style="color: var(--text-secondary); font-size: 0.9rem; margin: 0 0 20px 18px; line-height: 1.8;">
-                        <li>AlphaFold protein structure prediction integrated into a reproducible docking pipeline</li>
-                        <li>AutoDock Vina binding affinity scoring across compound libraries</li>
-                        <li>RDKit cheminformatics: ADMET filtering, fingerprint similarity, and property calculation</li>
-                        <li>End-to-end DHFR inhibitor workflow from target selection to ranked candidate output</li>
+                        <li>Morgan fingerprint (ECFP4) + Random Forest toxicity classifier ranks compounds by predicted safety score; model persisted with pickle for reuse</li>
+                        <li>BRICS/RECAP fragmentation + Murcko scaffold extraction + <code>LeadOptimizer</code> generates scored fragment libraries and Lipinski-aware optimisation suggestions</li>
+                        <li>3D ligand preparation pipeline: ETKDG conformer generation, MMFF94/UFF energy minimisation, Gasteiger charge assignment, PDB/SDF export — ready for AutoDock Vina input</li>
+                        <li>AlphaFold/ColabFold DHFR structure prediction → fpocket binding-site detection → Vina docking of trimethoprim and pyrimethamine → ligand efficiency scoring and RMSD validation</li>
                     </ul>
                     <div class="tech-stack">
                         <span class="tech-tag">RDKit</span>
-                        <span class="tech-tag">AlphaFold</span>
+                        <span class="tech-tag">scikit-learn</span>
+                        <span class="tech-tag">AlphaFold / ColabFold</span>
                         <span class="tech-tag">AutoDock Vina</span>
-                        <span class="tech-tag">Python</span>
+                        <span class="tech-tag">FastAPI</span>
                         <span class="tech-tag">Jupyter</span>
                     </div>
                     <a href="https://github.com/Zuleikha/pharma-ai-portfolio" class="project-link" target="_blank">View Repository →</a>
