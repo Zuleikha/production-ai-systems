@@ -1,6 +1,6 @@
 """
 MLOps Pipeline Launcher
-Automated startup script for the complete MLOps pipeline
+Runs the complete ML pipeline: data prep → training → evaluation → serving.
 """
 
 import os
@@ -8,284 +8,275 @@ import sys
 import subprocess
 import argparse
 import logging
-import time
+import pickle
 from pathlib import Path
-import yaml
-from typing import Optional
 
-# Setup logging
-logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
+logging.basicConfig(level=logging.INFO, format="%(asctime)s - %(levelname)s - %(message)s")
 logger = logging.getLogger(__name__)
 
+
 class MLOpsPipelineLauncher:
-    """Main launcher for MLOps pipeline components"""
+    """Orchestrates the MLOps pipeline stages."""
 
     def __init__(self):
         self.project_root = Path(__file__).parent
-        self.config_path = self.project_root / "config" / "config.yaml"
-        self.processes = []
+        self.processes: list = []
 
     def check_dependencies(self) -> bool:
-        """Check if all dependencies are installed"""
+        """Verify essential packages are available."""
         logger.info("Checking dependencies...")
-        
-        # Test only essential packages (skip problematic wandb)
-        essential_packages = ['pandas']
-        
-        missing_packages = []
-        for package in essential_packages:
+        missing = []
+        for package in ["pandas", "sklearn"]:
             try:
                 __import__(package)
             except ImportError:
-                missing_packages.append(package)
+                missing.append(package)
 
-        if missing_packages:
-            logger.error(f"Missing essential packages: {missing_packages}")
+        if missing:
+            logger.error(f"Missing packages: {missing}")
             return False
 
-        logger.info("Essential dependencies available")
+        logger.info("Dependencies OK")
         return True
 
     def setup_environment(self):
-        """Setup environment and create necessary directories"""
+        """Create required directories and copy .env template if needed."""
         logger.info("Setting up environment...")
-
-        # Create necessary directories
-        directories = [
+        for directory in [
             "data/raw", "data/processed", "models", "logs",
-            "mlruns", "evaluation_results", "monitoring_results"
-        ]
+            "mlruns", "evaluation_results", "monitoring_results",
+        ]:
+            (self.project_root / directory).mkdir(parents=True, exist_ok=True)
 
-        for directory in directories:
-            dir_path = self.project_root / directory
-            dir_path.mkdir(parents=True, exist_ok=True)
-
-        # Check if .env file exists
         env_file = self.project_root / ".env"
-        if not env_file.exists():
-            logger.warning(".env file not found. Creating from template...")
-            template_file = self.project_root / ".env.example"
-            if template_file.exists():
-                import shutil
-                shutil.copy(template_file, env_file)
-                logger.info("Created .env from template. Please configure your API keys.")
+        template = self.project_root / ".env.example"
+        if not env_file.exists() and template.exists():
+            import shutil
+            shutil.copy(template, env_file)
+            logger.info("Created .env from template — configure API keys before running.")
 
-        logger.info("Environment setup complete")
+        logger.info("Environment ready")
 
-    def create_sample_data(self):
-        """Create sample data for testing"""
-        logger.info("Creating sample data...")
-
+    def create_sample_data(self) -> str:
+        """Generate a labelled sentiment dataset for pipeline smoke-testing."""
         import pandas as pd
 
-        sample_data = pd.DataFrame({
-            'text': [
-                "This is a great product, I love it!",
-                "Terrible quality, would not recommend",
-                "Amazing service and fast delivery",
-                "Poor customer support experience",
-                "Excellent value for money",
-                "Waste of money, very disappointed",
-                "Outstanding quality and design",
-                "Not worth the price, overrated",
-                "Perfect for my needs, highly recommended",
-                "Broke after one day of use"
-            ] * 10,  # Create 100 samples
-            'label': ['positive', 'negative'] * 50
-        })
+        logger.info("Generating sample data...")
+        positive = [
+            "This is a great product, I love it!",
+            "Amazing service and fast delivery",
+            "Excellent value for money",
+            "Outstanding quality and design",
+            "Perfect for my needs, highly recommended",
+        ]
+        negative = [
+            "Terrible quality, would not recommend",
+            "Poor customer support experience",
+            "Waste of money, very disappointed",
+            "Not worth the price, overrated",
+            "Broke after one day of use",
+        ]
+        texts = (positive + negative) * 10
+        labels = (["positive"] * 5 + ["negative"] * 5) * 10
 
         data_path = self.project_root / "data" / "sample_data.csv"
-        sample_data.to_csv(data_path, index=False)
-
-        logger.info(f"Sample data created at {data_path}")
+        pd.DataFrame({"text": texts, "label": labels}).to_csv(data_path, index=False)
+        logger.info(f"Sample data saved to {data_path} ({len(texts)} rows)")
         return str(data_path)
 
-    def run_training(self, data_path: str):
-        """Run model training"""
-        logger.info("Starting model training simulation...")
-
+    def run_training(self, data_path: str) -> bool:
+        """Train a TF-IDF + Logistic Regression classifier and persist the artefacts."""
+        logger.info("Starting model training...")
         try:
-            # Simulate training process without complex dependencies
-            logger.info("Loading sample data...")
             import pandas as pd
+            from sklearn.feature_extraction.text import TfidfVectorizer
+            from sklearn.linear_model import LogisticRegression
+            from sklearn.model_selection import train_test_split
+
             data = pd.read_csv(data_path)
-            logger.info(f"Loaded {len(data)} samples")
-            
-            # Simulate training steps
-            logger.info("Preprocessing data...")
-            time.sleep(2)
-            
-            logger.info("Training model...")
-            time.sleep(3)
-            
-            logger.info("Validating model...")
-            time.sleep(1)
-            
-            logger.info("Training completed successfully")
+            logger.info(f"Loaded {len(data)} training samples")
+
+            vectorizer = TfidfVectorizer(max_features=1000, stop_words="english")
+            X = vectorizer.fit_transform(data["text"])
+            y = (data["label"] == "positive").astype(int)
+
+            X_train, X_val, y_train, y_val = train_test_split(
+                X, y, test_size=0.2, random_state=42
+            )
+
+            model = LogisticRegression(max_iter=1000)
+            model.fit(X_train, y_train)
+
+            val_accuracy = model.score(X_val, y_val) * 100
+            logger.info(f"Validation accuracy: {val_accuracy:.1f}%")
+
+            models_dir = self.project_root / "models"
+            with open(models_dir / "model.pkl", "wb") as f:
+                pickle.dump(model, f)
+            with open(models_dir / "vectorizer.pkl", "wb") as f:
+                pickle.dump(vectorizer, f)
+
+            logger.info("Model artefacts saved to models/")
             return True
 
         except Exception as e:
             logger.error(f"Training failed: {e}")
             return False
 
-    def run_evaluation(self, data_path: str):
-        """Run model evaluation"""
-        logger.info("Starting model evaluation simulation...")
-
+    def run_evaluation(self, data_path: str) -> bool:
+        """Evaluate the saved model and log standard classification metrics."""
+        logger.info("Starting model evaluation...")
         try:
-            # Simulate evaluation
-            logger.info("Loading test data...")
-            time.sleep(1)
-            
-            logger.info("Running evaluation...")
-            time.sleep(2)
-            
-            logger.info("Generating metrics...")
-            logger.info("Evaluation Results:")
-            logger.info("- Accuracy: 85.2%")
-            logger.info("- Precision: 84.1%") 
-            logger.info("- Recall: 86.3%")
-            logger.info("- F1 Score: 85.2%")
-            
-            logger.info("Evaluation completed")
+            import pandas as pd
+            from sklearn.metrics import (
+                accuracy_score,
+                precision_score,
+                recall_score,
+                f1_score,
+            )
+
+            models_dir = self.project_root / "models"
+            model_path = models_dir / "model.pkl"
+            vectorizer_path = models_dir / "vectorizer.pkl"
+
+            if not model_path.exists():
+                logger.error("No trained model found — run training first.")
+                return False
+
+            with open(model_path, "rb") as f:
+                model = pickle.load(f)
+            with open(vectorizer_path, "rb") as f:
+                vectorizer = pickle.load(f)
+
+            data = pd.read_csv(data_path)
+            X = vectorizer.transform(data["text"])
+            y_true = (data["label"] == "positive").astype(int)
+            y_pred = model.predict(X)
+
+            logger.info("Evaluation results:")
+            logger.info(f"  Accuracy:  {accuracy_score(y_true, y_pred) * 100:.1f}%")
+            logger.info(f"  Precision: {precision_score(y_true, y_pred) * 100:.1f}%")
+            logger.info(f"  Recall:    {recall_score(y_true, y_pred) * 100:.1f}%")
+            logger.info(f"  F1 Score:  {f1_score(y_true, y_pred) * 100:.1f}%")
             return True
 
         except Exception as e:
             logger.error(f"Evaluation failed: {e}")
             return False
 
-    def start_api_server(self):
-        """Start FastAPI server"""
+    def start_api_server(self) -> bool:
+        """Launch the FastAPI prediction server as a background process."""
         logger.info("Starting API server...")
-
         try:
-            # Check if FastAPI is available
-            try:
-                import fastapi
-                logger.info("FastAPI available - would start server on http://localhost:8000")
-            except ImportError:
-                logger.warning("FastAPI not available - API server simulation only")
-            
-            logger.info("API server simulation started")
-            logger.info("API endpoints would be available at:")
-            logger.info("- http://localhost:8000/predict")
-            logger.info("- http://localhost:8000/health")
-            logger.info("- http://localhost:8000/docs")
-
+            import fastapi  # noqa: F401
+            process = subprocess.Popen(
+                [sys.executable, "-m", "uvicorn", "src.api:app",
+                 "--host", "0.0.0.0", "--port", "8000"],
+                cwd=self.project_root,
+            )
+            self.processes.append(process)
+            logger.info("API server started — http://localhost:8000/docs")
             return True
-
+        except ImportError:
+            logger.warning("FastAPI not installed — skipping API server")
+            return False
         except Exception as e:
             logger.error(f"Failed to start API server: {e}")
             return False
 
-    def start_mlflow_ui(self):
-        """Start MLflow UI"""
-        logger.info("Starting MLflow UI simulation...")
-
+    def start_mlflow_ui(self) -> bool:
+        """Launch the MLflow experiment-tracking UI as a background process."""
+        logger.info("Starting MLflow UI...")
         try:
-            # Check if MLflow is available
-            try:
-                import mlflow
-                logger.info("MLflow available - would start UI on http://localhost:5000")
-            except ImportError:
-                logger.warning("MLflow not available - UI simulation only")
-                
-            logger.info("MLflow UI simulation started")
-            logger.info("Experiment tracking would be available at http://localhost:5000")
-
+            import mlflow  # noqa: F401
+            process = subprocess.Popen(
+                [sys.executable, "-m", "mlflow", "ui",
+                 "--host", "0.0.0.0", "--port", "5000"],
+                cwd=self.project_root,
+            )
+            self.processes.append(process)
+            logger.info("MLflow UI available — http://localhost:5000")
             return True
-
+        except ImportError:
+            logger.warning("MLflow not installed — skipping UI")
+            return False
         except Exception as e:
-            logger.error(f"Failed to start MLflow UI: {e}")
+            logger.error(f"Failed to start MLflow: {e}")
             return False
 
-    def run_tests(self):
-        """Run test suite"""
-        logger.info("Running test simulation...")
-
-        try:
-            logger.info("Running unit tests...")
-            time.sleep(1)
-            
-            logger.info("Running integration tests...")
-            time.sleep(2)
-            
-            logger.info("All tests passed successfully")
-            return True
-
-        except Exception as e:
-            logger.error(f"Failed to run tests: {e}")
-            return False
+    def run_tests(self) -> bool:
+        """Execute the test suite via pytest."""
+        logger.info("Running test suite...")
+        result = subprocess.run(
+            [sys.executable, "-m", "pytest", "tests/", "-v", "--tb=short"],
+            capture_output=True,
+            text=True,
+            cwd=self.project_root,
+        )
+        if result.returncode == 0:
+            logger.info("All tests passed")
+        else:
+            logger.warning("Some tests failed:\n%s", result.stdout[-2000:])
+        return result.returncode == 0
 
     def cleanup(self):
-        """Cleanup processes"""
+        """Terminate any background processes launched during the pipeline."""
         logger.info("Cleaning up...")
-
         for process in self.processes:
             try:
                 process.terminate()
                 process.wait(timeout=5)
             except subprocess.TimeoutExpired:
                 process.kill()
-            except:
+            except Exception:
                 pass
 
-    def run_full_pipeline(self):
-        """Run the complete MLOps pipeline"""
-        logger.info("Starting MLOps Pipeline...")
-
+    def run_full_pipeline(self) -> bool:
+        """Execute the full pipeline end-to-end."""
+        logger.info("Starting MLOps pipeline...")
         try:
-            # Check dependencies
             if not self.check_dependencies():
                 return False
 
-            # Setup environment
             self.setup_environment()
-
-            # Create sample data
             data_path = self.create_sample_data()
 
-            # Run training
             if not self.run_training(data_path):
                 logger.error("Pipeline failed at training stage")
                 return False
 
-            # Run evaluation
             if not self.run_evaluation(data_path):
                 logger.error("Pipeline failed at evaluation stage")
                 return False
 
-            # Start services
             self.start_mlflow_ui()
             self.start_api_server()
 
-            logger.info("="*60)
-            logger.info("MLOps Pipeline Started Successfully!")
-            logger.info("="*60)
-            logger.info("Pipeline completed:")
-            logger.info("- Data processing: Complete")
-            logger.info("- Model training: Complete")
-            logger.info("- Model evaluation: Complete")
-            logger.info("- Services: Ready")
-            logger.info("="*60)
-            logger.info("MLOps pipeline demonstration complete")
-
+            logger.info("=" * 60)
+            logger.info("MLOps pipeline complete")
+            logger.info("  Data:       processed")
+            logger.info("  Training:   complete")
+            logger.info("  Evaluation: complete")
+            logger.info("  Services:   started")
+            logger.info("=" * 60)
             return True
 
         except Exception as e:
             logger.error(f"Pipeline failed: {e}")
             return False
-
         finally:
             self.cleanup()
 
-def main():
-    """Main entry point"""
-    parser = argparse.ArgumentParser(description="MLOps Pipeline Launcher")
-    parser.add_argument("--mode", choices=["full", "train", "eval", "api", "test"],
-                       default="full", help="Run mode")
-    parser.add_argument("--data", help="Path to data file")
 
+def main():
+    parser = argparse.ArgumentParser(description="MLOps Pipeline Launcher")
+    parser.add_argument(
+        "--mode",
+        choices=["full", "train", "eval", "api", "test"],
+        default="full",
+        help="Pipeline stage to run",
+    )
+    parser.add_argument("--data", help="Path to data CSV (optional)")
     args = parser.parse_args()
 
     launcher = MLOpsPipelineLauncher()
@@ -306,16 +297,13 @@ def main():
         elif args.mode == "test":
             success = launcher.run_tests()
 
-        if success:
-            logger.info("Operation completed successfully")
-        else:
-            logger.error("Operation failed")
-            sys.exit(1)
+        sys.exit(0 if success else 1)
 
     except KeyboardInterrupt:
-        logger.info("Operation interrupted by user")
+        logger.info("Interrupted by user")
     finally:
         launcher.cleanup()
+
 
 if __name__ == "__main__":
     main()

@@ -1,20 +1,28 @@
-import PyPDF2
 import io
 from typing import Optional
 
+import PyPDF2
+
+
 class PDFParser:
-    """Parse PDF documents and extract text."""
-    
+    """Extract plain text from PDF documents."""
+
     def extract_text(self, pdf_content: bytes) -> str:
-        """Extract text from PDF bytes."""
+        """Return concatenated text from all pages of a PDF.
+
+        Args:
+            pdf_content: Raw PDF bytes.
+
+        Returns:
+            Stripped plain-text string.
+
+        Raises:
+            ValueError: If the PDF cannot be parsed.
+        """
         try:
-            pdf_file = io.BytesIO(pdf_content)
-            pdf_reader = PyPDF2.PdfReader(pdf_file)
-            
-            text = ""
-            for page in pdf_reader.pages:
-                text += page.extract_text() + "\n"
-            
-            return text.strip()
+            reader = PyPDF2.PdfReader(io.BytesIO(pdf_content))
+            return "\n".join(
+                page.extract_text() or "" for page in reader.pages
+            ).strip()
         except Exception as e:
-            raise ValueError(f"PDF parsing failed: {str(e)}")
+            raise ValueError(f"PDF parsing failed: {e}") from e
