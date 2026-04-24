@@ -28,7 +28,7 @@ class DataQualityChecker:
             try:
                 # Validate against schema
                 validated = ResumeSchema(**record)
-                valid_records.append(validated.dict())
+                valid_records.append(validated.model_dump())
             except ValidationError as e:
                 error_details = {
                     'record_index': idx,
@@ -184,7 +184,7 @@ class DataQualityChecker:
         )
         
         # Add additional analysis to the report
-        report_dict = quality_metrics.dict()
+        report_dict = quality_metrics.model_dump()
         report_dict.update({
             'data_distribution': distribution_info,
             'consistency_analysis': consistency_info,

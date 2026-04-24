@@ -1,7 +1,7 @@
 import io
 from typing import Optional
 
-import PyPDF2
+import pypdf
 
 
 class PDFParser:
@@ -20,7 +20,7 @@ class PDFParser:
             ValueError: If the PDF cannot be parsed.
         """
         try:
-            reader = PyPDF2.PdfReader(io.BytesIO(pdf_content))
+            reader = pypdf.PdfReader(io.BytesIO(pdf_content))
             return "\n".join(
                 page.extract_text() or "" for page in reader.pages
             ).strip()
