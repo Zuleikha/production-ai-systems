@@ -1,34 +1,29 @@
-# Environment variables
+# Secrets — never commit these
 .env
-*.env
 
 # Python
 __pycache__/
 *.py[cod]
-*$py.class
-*.so
-.Python
-env/
-venv/
+*.pyo
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
 *.egg-info/
 dist/
 build/
 
-# IDEs
-.vscode/
-.idea/
-*.swp
-*.swo
+# Data & persisted stores
+data/raw/
+data/chroma/
+models/
+
+# HuggingFace / sentence-transformers model cache
+.cache/
+sentence_transformers/
+
+# Logs
+*.log
 
 # OS
 .DS_Store
 Thumbs.db
-
-# Models and data
-models/*.json
-models/*.pkl
-data/raw/*
-!data/raw/.gitkeep
-
-# Docker
-*.log

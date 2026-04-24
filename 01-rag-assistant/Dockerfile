@@ -1,21 +1,19 @@
-FROM python:3.11-slim
+FROM python:3.12-slim
 
 WORKDIR /app
 
-# Copy requirements first for better caching
-COPY requirements.txt .
+RUN pip install --upgrade pip --quiet
 
-# Install Python dependencies
+COPY requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
 
-# Copy application code
+# Pre-download the reranker model so the first query is not slow
+RUN python -c "from sentence_transformers import CrossEncoder; CrossEncoder('cross-encoder/ms-marco-MiniLM-L-6-v2')"
+
 COPY . .
 
-# Create necessary directories
-RUN mkdir -p data/raw models
+RUN mkdir -p data/raw data/processed data/chroma
 
-# Expose ports for both FastAPI and Streamlit
-EXPOSE 8000 8501
+EXPOSE 8000
 
-# Default command (can be overridden)
-CMD ["python", "src/main.py"]
+CMD ["python", "-m", "uvicorn", "src.api.main:app", "--host", "0.0.0.0", "--port", "8000"]
