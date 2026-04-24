@@ -1,6 +1,9 @@
 # Secrets — never commit these
 .env
 
+# Personal notes
+INTERVIEW_NOTES.md
+
 # Python
 __pycache__/
 *.py[cod]
