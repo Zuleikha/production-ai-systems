@@ -25,5 +25,8 @@ Thumbs.db
 # Unnecessary files
 New Text Document.txt
 
+# Personal notes
+INTERVIEW_NOTES.md
+
 # Dagster
 dagster_home/

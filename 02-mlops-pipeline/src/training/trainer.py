@@ -15,10 +15,6 @@ from pathlib import Path
 import mlflow
 import mlflow.pytorch
 from transformers import TrainingArguments, Trainer, AutoTokenizer
-import optuna
-from optuna.integration import MLflowCallback
-import wandb
-
 from ..models.model_manager import ModelManager, BaseModel
 from ..data.data_processor import DataManager
 
@@ -39,12 +35,6 @@ class MLOpsTrainer:
         mlflow.set_tracking_uri(self.config.get('mlflow_tracking_uri', 'mlruns'))
         mlflow.set_experiment(self.config['project']['name'])
         
-        # Initialize Weights & Biases
-        wandb.init(
-            project=self.config['project']['name'],
-            config=self.config
-        )
-    
     def train_model(self, 
                    model_name: str, 
                    data_path: str,
@@ -88,7 +78,6 @@ class MLOpsTrainer:
             # Log metrics
             for metric_name, value in metrics.items():
                 mlflow.log_metric(metric_name, value)
-                wandb.log({metric_name: value})
             
             # Save model
             model_path = f"models/{model_name}_trained"
@@ -131,7 +120,7 @@ class MLOpsTrainer:
             load_best_model_at_end=True,
             metric_for_best_model="eval_loss",
             greater_is_better=False,
-            report_to=["mlflow", "wandb"],
+            report_to=["mlflow"],
         )
         
         # Initialize trainer
@@ -224,12 +213,6 @@ class MLOpsTrainer:
                 'val_loss': avg_val_loss
             }, step=epoch)
             
-            wandb.log({
-                'epoch': epoch,
-                'train_loss': avg_train_loss,
-                'val_loss': avg_val_loss
-            })
-            
             # Save best model
             if avg_val_loss < best_val_loss:
                 best_val_loss = avg_val_loss
@@ -245,73 +228,54 @@ class MLOpsTrainer:
         }
     
     def _hyperparameter_optimization(self, model: BaseModel, model_name: str, data_splits) -> Dict[str, Any]:
-        """Hyperparameter optimization using Optuna"""
-        
+        """Grid-search hyperparameter optimization tracked via MLflow."""
+
         logger.info(f"Starting hyperparameter optimization for {model_name}")
-        
-        def objective(trial):
-            # Suggest hyperparameters
-            learning_rate = trial.suggest_float('learning_rate', 1e-5, 1e-3, log=True)
-            batch_size = trial.suggest_categorical('batch_size', [16, 32, 64])
-            epochs = trial.suggest_int('epochs', 3, 10)
-            
-            # Update config temporarily
-            original_config = self.config['training'].copy()
-            self.config['training'].update({
-                'learning_rate': learning_rate,
-                'batch_size': batch_size,
-                'epochs': epochs
-            })
-            
+
+        grid = self.config['training'].get('hyperopt', {}).get('grid', {
+            'learning_rate': [1e-5, 3e-5, 1e-4],
+            'batch_size': [16, 32],
+            'epochs': [3],
+        })
+
+        best_score = float('inf')
+        best_params: Dict[str, Any] = {}
+
+        from itertools import product
+        keys = list(grid.keys())
+        for combo in product(*[grid[k] for k in keys]):
+            params = dict(zip(keys, combo))
+            original = self.config['training'].copy()
+            self.config['training'].update(params)
+
             try:
-                # Train with suggested hyperparameters
-                if model.config['source'] == 'huggingface':
-                    metrics = self._train_hf_model(model, data_splits)
-                    score = metrics['final_eval_loss']
-                else:
-                    metrics = self._train_custom_model(model, data_splits)
-                    score = metrics['final_val_loss']
-                
-                return score
-                
+                with mlflow.start_run(run_name=f"{model_name}_trial", nested=True):
+                    mlflow.log_params(params)
+                    if model.config['source'] == 'huggingface':
+                        metrics = self._train_hf_model(model, data_splits)
+                        score = metrics['final_eval_loss']
+                    else:
+                        metrics = self._train_custom_model(model, data_splits)
+                        score = metrics['final_val_loss']
+                    mlflow.log_metric('trial_score', score)
+
+                if score < best_score:
+                    best_score = score
+                    best_params = params
+
             except Exception as e:
-                logger.error(f"Trial failed: {e}")
-                return float('inf')
-            
+                logger.error(f"Trial {params} failed: {e}")
             finally:
-                # Restore original config
-                self.config['training'] = original_config
-        
-        # Create study
-        study = optuna.create_study(
-            direction=self.config['training']['hyperopt']['optimization_direction'].replace('maximize', 'minimize'),
-            study_name=f"{model_name}_hyperopt"
-        )
-        
-        # Add MLflow callback
-        mlflow_callback = MLflowCallback(
-            tracking_uri=mlflow.get_tracking_uri(),
-            metric_name='objective_value'
-        )
-        
-        # Optimize
-        study.optimize(
-            objective,
-            n_trials=self.config['training']['hyperopt']['n_trials'],
-            callbacks=[mlflow_callback]
-        )
-        
-        # Log best parameters
-        best_params = study.best_params
-        logger.info(f"Best hyperparameters: {best_params}")
-        
-        # Train final model with best parameters
+                self.config['training'] = original
+
+        logger.info(f"Best hyperparameters: {best_params} (score={best_score:.4f})")
+
         self.config['training'].update(best_params)
         final_metrics = self._standard_training(model, f"{model_name}_optimized", data_splits)
-        
+
         return {
             'best_params': best_params,
-            'best_score': study.best_value,
+            'best_score': best_score,
             **final_metrics
         }
     

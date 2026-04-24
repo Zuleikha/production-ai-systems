@@ -16,7 +16,6 @@ import torch
 from torch.utils.data import Dataset, DataLoader
 from datasets import Dataset as HFDataset, DatasetDict
 from transformers import AutoTokenizer
-import great_expectations as ge
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
@@ -79,39 +78,31 @@ class TextDataProcessor(BaseDataProcessor):
             return False
     
     def validate_data(self) -> Dict[str, bool]:
-        """Validate data using Great Expectations"""
+        """Validate data using pandas assertions."""
         if self.data is None:
             raise ValueError("No data loaded for validation")
-        
-        # Convert pandas DataFrame to Great Expectations DataFrame
-        ge_df = ge.from_pandas(self.data)
-        
-        validation_results = {}
-        
-        try:
-            # Basic validation checks
-            validation_results['has_text_column'] = ge_df.expect_column_to_exist('text').success
-            validation_results['has_label_column'] = ge_df.expect_column_to_exist('label').success
-            validation_results['no_null_text'] = ge_df.expect_column_values_to_not_be_null('text').success
-            validation_results['no_null_labels'] = ge_df.expect_column_values_to_not_be_null('label').success
-            
-            # Text-specific validations
-            if 'text' in self.data.columns:
-                validation_results['min_text_length'] = ge_df.expect_column_value_lengths_to_be_between(
-                    'text', min_value=1, max_value=10000
-                ).success
-            
-            # Label validation
-            if 'label' in self.data.columns:
-                unique_labels = self.data['label'].nunique()
-                validation_results['valid_label_count'] = 1 < unique_labels <= 100
-            
-            logger.info(f"Data validation completed: {validation_results}")
-            return validation_results
-            
-        except Exception as e:
-            logger.error(f"Data validation failed: {e}")
-            return {'validation_error': False}
+
+        results: Dict[str, bool] = {}
+
+        results["has_text_column"] = "text" in self.data.columns
+        results["has_label_column"] = "label" in self.data.columns
+        results["no_null_text"] = (
+            self.data["text"].notna().all() if results["has_text_column"] else False
+        )
+        results["no_null_labels"] = (
+            self.data["label"].notna().all() if results["has_label_column"] else False
+        )
+
+        if results["has_text_column"]:
+            lengths = self.data["text"].astype(str).str.len()
+            results["min_text_length"] = bool((lengths >= 1).all() and (lengths <= 10000).all())
+
+        if results["has_label_column"]:
+            unique_labels = self.data["label"].nunique()
+            results["valid_label_count"] = 1 < unique_labels <= 100
+
+        logger.info(f"Data validation completed: {results}")
+        return results
     
     def preprocess(self, model_type: str = "huggingface"):
         """Preprocess text data based on model type"""
