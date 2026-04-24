@@ -1,38 +1,79 @@
-version: '3.8'
-
 services:
-  rag-assistant:
+  rag-api:
     build: ./01-rag-assistant
     ports:
-      - "8501:8501"  # Streamlit
-      - "8000:8000"  # FastAPI
+      - "8000:8000"
     environment:
       - OPENAI_API_KEY=${OPENAI_API_KEY}
     volumes:
       - ./01-rag-assistant/data:/app/data
-      - ./01-rag-assistant/models:/app/models
+    networks:
+      - ai-portfolio
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  rag-ui:
+    build:
+      context: ./01-rag-assistant
+      dockerfile: Dockerfile
+    command: streamlit run src/app.py --server.port 8501 --server.address 0.0.0.0
+    ports:
+      - "8501:8501"
+    environment:
+      - OPENAI_API_KEY=${OPENAI_API_KEY}
+      - API_URL=http://rag-api:8000
+    depends_on:
+      - rag-api
     networks:
       - ai-portfolio
 
-  mlops-pipeline:
+  mlops-api:
     build: ./02-mlops-pipeline
     ports:
-      - "8001:8000"  # FastAPI
-      - "5000:5000"  # MLflow UI
+      - "8001:8000"
+      - "5000:5000"
     volumes:
       - ./02-mlops-pipeline/data:/app/data
       - ./02-mlops-pipeline/models:/app/models
+      - ./02-mlops-pipeline/mlruns:/app/mlruns
     networks:
       - ai-portfolio
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
 
-  computer-vision:
+  vision-api:
     build: ./03-computer-vision
     ports:
-      - "8002:8000"  # FastAPI
+      - "8002:8000"
     volumes:
       - ./03-computer-vision/models:/app/models
     networks:
       - ai-portfolio
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  resume-api:
+    build: ./04-resume-screening
+    ports:
+      - "8003:8000"
+    volumes:
+      - ./04-resume-screening/data:/app/data
+    networks:
+      - ai-portfolio
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
 
 networks:
   ai-portfolio:

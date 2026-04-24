@@ -1,71 +1,40 @@
 # AI Engineering Portfolio
-Production-ready AI systems across NLP, MLOps, Computer Vision, and Agentic AI.
+
+Four production-ready AI systems covering RAG, MLOps, computer vision, and NLP — each with a FastAPI serving layer, Docker deployment, and full modernisation to current tooling.
 
 ## Projects
 
-## Live Cloud Demo
-**RAG Assistant:** http://16.170.240.55
-- API Documentation: http://16.170.240.55/docs
-- Health Check: http://16.170.240.55/health
-- **Cloud Platform:** AWS EC2 Ubuntu Server
-- **Status:** Production deployment
-
-**Status:** Available on-demand for demonstrations
-
-This demonstrates production cloud deployment capabilities including AWS infrastructure setup, environment configuration, and API serving.
-
-### 1. RAG Assistant - Natural Language Processing
-**Tech Stack:** FastAPI, Streamlit, OpenAI, LangChain, Docker
-
-Retrieval-Augmented Generation system with conversation memory and document processing.
-- Document chunking and embedding
-- Conversation context management
-- Source attribution and confidence scoring
-- Production FastAPI + Streamlit architecture
-
-### 2. MLOps Pipeline - Production ML Operations
-**Tech Stack:** Dagster, FastAPI, Docker, Scikit-learn
-
-End-to-end machine learning pipeline with orchestration and model serving.
-- Asset-based pipeline orchestration
-- Automated model training and validation
-- Production serving with health checks
-- Containerized deployment
-
-### 3. Computer Vision System - Object Detection
-**Tech Stack:** PyTorch, FastAPI, OpenCV, Faster R-CNN
-
-Real-time object detection system with web interface.
-- Pre-trained Faster R-CNN ResNet-50 FPN
-- Advanced duplicate filtering
-- Real-time processing (3-5s per image)
-- Responsive web UI
-
-### 4. Resume Screening System - NLP Classification
-**Tech Stack:** Python, NLP, Machine Learning
-
-Automated resume screening and candidate matching system.
-- Resume parsing and entity extraction
-- Skills matching and scoring
-- Candidate ranking algorithms
-- Production-ready classification pipeline
-
-### 5. Multi-Agent Systems with LangChain
-**Repository:** [langchain-agent-systems](https://github.com/Zuleikha/langchain-agent-systems)  
-**Tech Stack:** LangChain, OpenAI, Vector DBs, Python
-
-Stateful AI agents with memory systems, RAG pipelines, and custom tool integration.
-- Memory-enabled conversational agents
-- Chain-of-Thought reasoning patterns
-- Custom agent tools and workflows
-- Adaptive learning platform prototype
+| # | Project | Description | Tech Stack |
+|---|---|---|---|
+| 01 | [RAG Assistant](./01-rag-assistant) | Hybrid retrieval (dense + BM25) with cross-encoder reranking and gpt-4o-mini generation | FastAPI, Streamlit, ChromaDB, OpenAI, sentence-transformers |
+| 02 | [MLOps Pipeline](./02-mlops-pipeline) | BERT fine-tuning on IMDB with asset-based orchestration and experiment tracking | Dagster, MLflow, HuggingFace Transformers, FastAPI |
+| 03 | [Computer Vision](./03-computer-vision) | Object detection with Faster R-CNN ResNet-50 FPN and configurable NMS post-processing | PyTorch, Torchvision, OpenCV, FastAPI |
+| 04 | [Resume Screening](./04-resume-screening) | Semantic candidate ranking with Pydantic v2 schema validation and bias monitoring | sentence-transformers, pypdf, FastAPI, Pydantic v2 |
 
 ## Quick Start
-Each project runs independently. See individual README files for setup instructions.
 
-## Technical Skills
-- Agentic AI: Multi-agent systems, LangChain, memory management, tool integration
-- NLP: Document processing, embeddings, vector search, RAG pipelines
-- MLOps: Pipeline orchestration, model serving, containerization
-- Computer Vision: Object detection, image processing
-- Engineering: Microservices, API design, Docker, production deployment
+Each project runs independently. See its `README.md` for setup.
+
+To run all services via Docker Compose:
+
+```bash
+cp .env.example .env   # add OPENAI_API_KEY
+docker compose up
+```
+
+| Service | URL |
+|---|---|
+| RAG API | http://localhost:8000 |
+| RAG UI (Streamlit) | http://localhost:8501 |
+| MLOps API | http://localhost:8001 |
+| MLflow UI | http://localhost:5000 |
+| Vision API | http://localhost:8002 |
+| Resume API | http://localhost:8003 |
+
+## Shared Patterns
+
+- **Config**: pydantic-settings `BaseSettings` with `.env` support across all projects
+- **API**: FastAPI with async lifespan (no deprecated `@app.on_event`)
+- **Linting**: `ruff` (replaces black + flake8) across all projects
+- **PDF parsing**: `pypdf` (01, 04) — PyPDF2 removed
+- **Docs**: Each project has `INTERVIEW_NOTES.md` (gitignored) with architecture decisions and Q&As
