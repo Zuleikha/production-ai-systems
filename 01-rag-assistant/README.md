@@ -1,6 +1,20 @@
 # RAG Assistant — v2
 
-A production-ready Retrieval-Augmented Generation system using **hybrid retrieval** and **cross-encoder reranking**. Accepts PDF and text documents, indexes them in a persistent vector store, and answers natural-language questions with inline citations.
+Retrieval-Augmented Generation system with hybrid retrieval and cross-encoder reranking. Accepts PDF and text documents, indexes them in ChromaDB, and answers questions with inline citations.
+
+## Tech stack
+
+| Layer | Technology |
+|---|---|
+| LLM | `gpt-4o-mini` |
+| Embeddings | `text-embedding-3-small` (1536-dim) |
+| Vector store | ChromaDB (persistent, HNSW) |
+| Sparse retrieval | BM25 (`rank-bm25`) |
+| Reranker | `cross-encoder/ms-marco-MiniLM-L-6-v2` |
+| API | FastAPI + uvicorn |
+| Frontend | Streamlit |
+| Config | `pydantic-settings` |
+| Logging | `structlog` |
 
 ## Architecture
 
@@ -19,7 +33,7 @@ A production-ready Retrieval-Augmented Generation system using **hybrid retrieva
                             │                        ├─ Sparse (BM25)       │
                             │                        └─ RRF fusion          │
                             │                    └─ CrossEncoderReranker    │
-                            │                    └─ RAGGenerator (GPT-4o)  │
+                            │                    └─ RAGGenerator (gpt-4o-mini) │
                             └───────────────────────────────────────────────┘
 ```
 
@@ -41,54 +55,39 @@ A production-ready Retrieval-Augmented Generation system using **hybrid retrieva
 
 ## Quick start
 
-### Local
-
 ```bash
-# 1. Clone and install
 pip install -r requirements.txt
-
-# 2. Configure
-cp .env.example .env
-# Edit .env and add your OPENAI_API_KEY
-
-# 3. Start the API
+cp .env.example .env          # set OPENAI_API_KEY
 python -m uvicorn src.api.main:app --reload
-
-# 4. (Optional) Start the Streamlit frontend
-streamlit run src/app.py
+streamlit run src/app.py      # optional frontend
 ```
 
-### Docker Compose
+**Docker:**
 
 ```bash
-cp .env.example .env   # add OPENAI_API_KEY
+cp .env.example .env
 docker compose up --build
 ```
 
-- API: http://localhost:8000
-- Frontend: http://localhost:8501
-- API docs: http://localhost:8000/docs
+API → `localhost:8000` · Frontend → `localhost:8501` · Swagger → `localhost:8000/docs`
 
-## Ingesting documents
+## Usage
 
-Drop files into `data/raw/` before starting the API — they will be ingested automatically on startup.
-
-Or upload via the API at any time:
+**Ingest** — drop files into `data/raw/` (auto-ingested on startup) or upload at runtime:
 
 ```bash
-curl -X POST http://localhost:8000/ingest \
-  -F "file=@my_document.pdf"
+curl -X POST localhost:8000/ingest -F "file=@report.pdf"
 ```
 
-## Querying
+**Query:**
 
 ```bash
-curl -X POST http://localhost:8000/query \
+curl -X POST localhost:8000/query \
   -H "Content-Type: application/json" \
-  -d '{"question": "What is the main topic of the document?", "conversation_id": "session-1"}'
+  -d '{"question": "What were the key findings?", "conversation_id": "s1"}'
 ```
 
-Response includes the answer, cited sources with rerank scores, token usage, and per-stage latency.
+Response: `answer`, cited `sources` with rerank scores, `tokens_used`, per-stage `latency_ms`.
 
 ## API reference
 
