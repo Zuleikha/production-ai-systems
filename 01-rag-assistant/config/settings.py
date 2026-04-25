@@ -23,9 +23,9 @@ class Settings(BaseSettings):
     retrieval_top_k: int = Field(default=10, ge=1, le=50)
     rerank_top_k: int = Field(default=3, ge=1, le=20)
 
-    # ChromaDB
-    chroma_persist_dir: str = "./data/chroma"
-    chroma_collection: str = "documents"
+    # Pinecone
+    pinecone_api_key: str = Field(..., description="Pinecone API key — required")
+    pinecone_index_name: str = "rag-assistant"
 
     # Chunking — token-based sizes, not character-based
     chunk_size: int = Field(default=512, ge=64, le=2048)

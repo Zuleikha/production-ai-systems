@@ -18,7 +18,7 @@ from dataclasses import dataclass
 import numpy as np
 from rank_bm25 import BM25Okapi
 
-from src.store.chroma_store import ChromaVectorStore
+from src.store.pinecone_store import PineconeVectorStore
 from src.rag.embedder import OpenAIEmbedder
 
 
@@ -33,7 +33,7 @@ class RetrievedDocument:
 class HybridRetriever:
     _RRF_K = 60  # standard constant; higher = less aggressive rank promotion
 
-    def __init__(self, store: ChromaVectorStore, embedder: OpenAIEmbedder) -> None:
+    def __init__(self, store: PineconeVectorStore, embedder: OpenAIEmbedder) -> None:
         self._store = store
         self._embedder = embedder
 

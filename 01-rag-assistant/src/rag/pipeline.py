@@ -17,7 +17,7 @@ import time
 
 from src.rag.chunker import SentenceAwareChunker, TextChunk
 from src.rag.embedder import OpenAIEmbedder
-from src.store.chroma_store import ChromaVectorStore
+from src.store.pinecone_store import PineconeVectorStore
 from src.rag.retriever import HybridRetriever
 from src.rag.reranker import CrossEncoderReranker
 from src.rag.generator import RAGGenerator, GenerationResult
@@ -72,7 +72,7 @@ _NO_DOCS_ANSWER = (
 class RAGPipeline:
     def __init__(self) -> None:
         self.embedder = OpenAIEmbedder()
-        self.store = ChromaVectorStore()
+        self.store = PineconeVectorStore()
         self.retriever = HybridRetriever(self.store, self.embedder)
         self.reranker = CrossEncoderReranker()
         self.generator = RAGGenerator()

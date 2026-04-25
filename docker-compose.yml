@@ -5,6 +5,8 @@ services:
       - "8000:8000"
     environment:
       - OPENAI_API_KEY=${OPENAI_API_KEY}
+      - PINECONE_API_KEY=${PINECONE_API_KEY}
+      - PINECONE_INDEX_NAME=${PINECONE_INDEX_NAME:-rag-assistant}
     volumes:
       - ./01-rag-assistant/data:/app/data
     networks:
@@ -24,6 +26,8 @@ services:
       - "8501:8501"
     environment:
       - OPENAI_API_KEY=${OPENAI_API_KEY}
+      - PINECONE_API_KEY=${PINECONE_API_KEY}
+      - PINECONE_INDEX_NAME=${PINECONE_INDEX_NAME:-rag-assistant}
       - API_URL=http://rag-api:8000
     depends_on:
       - rag-api
