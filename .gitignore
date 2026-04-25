@@ -1,6 +1,3 @@
-<<<<<<< HEAD
-.env
-=======
 # Environment variables
 .env
 *.env
@@ -35,4 +32,3 @@ data/raw/*
 
 # Docker
 *.log
->>>>>>> 90780a4c5daca7c57e666eeb39012a43ef736891

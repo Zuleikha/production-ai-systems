@@ -152,37 +152,53 @@ async def query(req: QueryRequest):
         raise HTTPException(500, str(exc)) from exc
 
 
-@app.post("/ingest", response_model=UploadResponse)
-async def ingest_document(file: UploadFile = File(...)):
+@app.post("/ingest", response_model=list[UploadResponse])
+async def ingest_documents(files: list[UploadFile] = File(...)):
     if ingestor is None:
         raise HTTPException(503, "Pipeline not initialised")
 
-    data = await file.read()
-    filename = file.filename or "upload"
-    suffix = Path(filename).suffix.lower()
-
     supported = {".pdf", ".txt", ".md"}
-    if suffix not in supported:
-        raise HTTPException(
-            400,
-            f"Unsupported file type '{suffix}'. Supported: {', '.join(sorted(supported))}",
-        )
+    results = []
+    for file in files:
+        data = await file.read()
+        filename = file.filename or "upload"
+        suffix = Path(filename).suffix.lower()
 
-    try:
-        if suffix == ".pdf":
-            result = await ingestor.ingest_pdf_bytes(data, filename)
-        else:
-            text = data.decode("utf-8", errors="ignore")
-            result = await ingestor._ingest(text, source=filename, file_type=suffix.lstrip("."))
+        if suffix not in supported:
+            raise HTTPException(
+                400,
+                f"Unsupported file type '{suffix}'. Supported: {', '.join(sorted(supported))}",
+            )
 
-        return UploadResponse(
-            filename=result.source,
-            chunks_created=result.chunks_created,
-            characters_processed=result.characters_processed,
-        )
-    except Exception as exc:
-        logger.exception("Ingestion failed for %s", filename)
-        raise HTTPException(500, f"Ingestion failed: {exc}") from exc
+        try:
+            if suffix == ".pdf":
+                result = await ingestor.ingest_pdf_bytes(data, filename)
+            else:
+                text = data.decode("utf-8", errors="ignore")
+                result = await ingestor._ingest(text, source=filename, file_type=suffix.lstrip("."))
+
+            results.append(UploadResponse(
+                filename=result.source,
+                chunks_created=result.chunks_created,
+                characters_processed=result.characters_processed,
+            ))
+        except Exception as exc:
+            logger.exception("Ingestion failed for %s", filename)
+            raise HTTPException(500, f"Ingestion failed for {filename}: {exc}") from exc
+
+    return results
+
+
+@app.get("/documents")
+async def list_documents():
+    if pipeline is None:
+        raise HTTPException(503, "Pipeline not initialised")
+    docs = pipeline.store.get_all_documents()
+    counts: dict[str, int] = {}
+    for doc in docs:
+        source = doc["metadata"].get("source", "unknown")
+        counts[source] = counts.get(source, 0) + 1
+    return [{"name": name, "chunks": count} for name, count in sorted(counts.items())]
 
 
 @app.get("/metrics")

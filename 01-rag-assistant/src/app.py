@@ -2,10 +2,12 @@
 
 from __future__ import annotations
 
+import os
+
 import requests
 import streamlit as st
 
-API_BASE = "http://localhost:8000"
+API_BASE = os.getenv("API_URL", "http://localhost:8000")
 
 st.set_page_config(
     page_title="RAG Assistant",
@@ -38,27 +40,48 @@ with st.sidebar:
     # Document upload
     st.subheader("Ingest Documents")
     uploaded = st.file_uploader(
-        "Drop a PDF, TXT, or Markdown file",
+        "Drop PDF, TXT, or Markdown files",
         type=["pdf", "txt", "md"],
+        accept_multiple_files=True,
     )
     if uploaded:
         if st.button("Ingest", type="primary"):
-            with st.spinner(f"Processing {uploaded.name}…"):
+            with st.spinner(f"Processing {len(uploaded)} file(s)…"):
                 try:
                     r = requests.post(
                         f"{API_BASE}/ingest",
-                        files={"file": (uploaded.name, uploaded.getvalue(), uploaded.type)},
+                        files=[("files", (f.name, f.getvalue(), f.type)) for f in uploaded],
                         timeout=120,
                     )
                     r.raise_for_status()
-                    d = r.json()
-                    st.success(
-                        f"**{d['filename']}** ingested  \n"
-                        f"{d['chunks_created']} chunks · "
-                        f"{d['characters_processed']:,} chars"
-                    )
+                    for d in r.json():
+                        st.success(
+                            f"**{d['filename']}** — "
+                            f"{d['chunks_created']} chunks · "
+                            f"{d['characters_processed']:,} chars"
+                        )
                 except Exception as e:
                     st.error(f"Ingestion failed: {e}")
+
+    st.divider()
+
+    # Ingested documents list
+    st.subheader("Ingested Documents")
+    if st.button("Refresh", key="refresh_docs"):
+        st.session_state.pop("documents", None)
+    if "documents" not in st.session_state:
+        try:
+            resp = requests.get(f"{API_BASE}/documents", timeout=5)
+            resp.raise_for_status()
+            st.session_state.documents = resp.json()
+        except Exception:
+            st.session_state.documents = []
+    docs = st.session_state.get("documents", [])
+    if docs:
+        for doc in docs:
+            st.caption(f"📄 **{doc['name']}** — {doc['chunks']} chunks")
+    else:
+        st.caption("No documents ingested yet.")
 
     st.divider()
 
