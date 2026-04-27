@@ -33,9 +33,9 @@ def mock_pipeline():
 
     with (
         patch("src.rag.pipeline.OpenAIEmbedder") as MockEmbedder,
-        patch("src.rag.pipeline.ChromaVectorStore") as MockStore,
+        patch("src.rag.pipeline.PineconeVectorStore") as MockStore,
         patch("src.rag.pipeline.HybridRetriever") as MockRetriever,
-        patch("src.rag.pipeline.CrossEncoderReranker") as MockReranker,
+        patch("src.rag.pipeline.CohereReranker") as MockReranker,
         patch("src.rag.pipeline.RAGGenerator") as MockGenerator,
     ):
         mock_store = MockStore.return_value

@@ -23,6 +23,9 @@ class Settings(BaseSettings):
     retrieval_top_k: int = Field(default=10, ge=1, le=50)
     rerank_top_k: int = Field(default=3, ge=1, le=20)
 
+    # Cohere
+    cohere_api_key: str | None = Field(default=None, description="Cohere API key — optional; enables reranking")
+
     # Pinecone
     pinecone_api_key: str = Field(..., description="Pinecone API key — required")
     pinecone_index_name: str = "rag-assistant"

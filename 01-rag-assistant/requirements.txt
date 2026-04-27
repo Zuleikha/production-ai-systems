@@ -5,8 +5,9 @@ tiktoken>=0.7.0
 # ── Vector database ───────────────────────────────────────────────────────────
 pinecone>=5.0.0
 
-# ── Reranking & cross-encoder ─────────────────────────────────────────────────
-sentence-transformers>=3.0.0
+# ── Reranking ─────────────────────────────────────────────────────────────────
+# Cohere Rerank API is called via httpx (see src/rag/reranker.py) — no SDK
+# needed, which avoids the tokenizers/huggingface_hub transitive deps.
 
 # ── Hybrid retrieval (sparse leg) ────────────────────────────────────────────
 rank-bm25>=0.2.2

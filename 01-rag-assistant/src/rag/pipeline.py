@@ -2,12 +2,12 @@
 RAG pipeline — orchestrates every stage from ingestion to answer generation.
 
 Stage order:
-  ingest:  chunk → embed (batch) → upsert into ChromaDB
-  query:   embed query → hybrid retrieve → cross-encoder rerank → generate
+  ingest:  chunk → embed (batch) → upsert into Pinecone
+  query:   embed query → hybrid retrieve → Cohere rerank → generate
 
-All query paths are async. The reranker is CPU-bound and runs synchronously
-inside the async pipeline (fine for a single-server deployment; for high
-concurrency it should move to a thread-pool executor).
+All query paths are async. The reranker makes a synchronous HTTP call to the
+Cohere API; it falls back to embedding-score ordering if the key is absent or
+the call fails.
 """
 
 from __future__ import annotations
@@ -19,7 +19,7 @@ from src.rag.chunker import SentenceAwareChunker, TextChunk
 from src.rag.embedder import OpenAIEmbedder
 from src.store.pinecone_store import PineconeVectorStore
 from src.rag.retriever import HybridRetriever
-from src.rag.reranker import CrossEncoderReranker
+from src.rag.reranker import CohereReranker
 from src.rag.generator import RAGGenerator, GenerationResult
 from config.settings import settings
 
@@ -74,7 +74,7 @@ class RAGPipeline:
         self.embedder = OpenAIEmbedder()
         self.store = PineconeVectorStore()
         self.retriever = HybridRetriever(self.store, self.embedder)
-        self.reranker = CrossEncoderReranker()
+        self.reranker = CohereReranker()
         self.generator = RAGGenerator()
         self.chunker = SentenceAwareChunker(
             chunk_size=settings.chunk_size,
@@ -102,7 +102,7 @@ class RAGPipeline:
             documents=texts,
             metadatas=[c.metadata for c in chunks],
         )
-        logger.info("Ingested %d chunks into ChromaDB", len(chunks))
+        logger.info("Ingested %d chunks into Pinecone", len(chunks))
         return len(chunks)
 
     # ── Query ─────────────────────────────────────────────────────────────────
