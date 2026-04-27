@@ -1,0 +1,390 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>RAG Assistant — Docs</title>
+  <link href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:ital,wght@0,400;0,700;1,400&display=swap" rel="stylesheet">
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: 'Atkinson Hyperlegible', 'Segoe UI', Arial, sans-serif;
+      background: #faf7f2;
+      color: #2c2a3a;
+      font-size: 1.12rem;
+      line-height: 1.9;
+    }
+
+    .container { max-width: 780px; margin: 0 auto; padding: 36px 24px 80px; }
+
+    h1 { font-size: 1.9rem; color: #1e1a40; margin-bottom: 6px; }
+    h2 { font-size: 1.25rem; color: #1e1a40; margin-bottom: 14px; }
+    h3 { font-size: 1.05rem; color: #2a2060; margin-bottom: 8px; }
+    p  { margin-bottom: 14px; }
+
+    ul, ol { margin: 6px 0 14px 24px; }
+    li { margin-bottom: 8px; }
+
+    .subtitle { color: #5e5880; font-size: 1rem; margin-bottom: 20px; }
+
+    .live-badge {
+      display: inline-block;
+      background: #d0f0d8;
+      color: #1a5c30;
+      border-radius: 20px;
+      padding: 4px 14px;
+      font-size: 0.88rem;
+      font-weight: 700;
+      text-decoration: none;
+      margin-bottom: 20px;
+    }
+    .live-badge:hover { background: #b8e8c8; }
+
+    .nav {
+      display: flex; gap: 10px; flex-wrap: wrap;
+      margin-bottom: 28px;
+    }
+    .nav a {
+      background: #ede8fd; color: #4a2090;
+      padding: 7px 16px; border-radius: 20px;
+      text-decoration: none; font-size: 0.88rem; font-weight: 600;
+      transition: background 0.2s;
+    }
+    .nav a:hover { background: #d8d0f8; }
+
+    .card {
+      border-radius: 14px;
+      padding: 26px 28px;
+      margin-bottom: 18px;
+      border-left: 5px solid;
+    }
+    .card-blue   { background: #eef6fd; border-color: #5ba3d0; }
+    .card-green  { background: #eef8f1; border-color: #4daa70; }
+    .card-yellow { background: #fdf8ec; border-color: #c8980a; }
+    .card-purple { background: #f4effe; border-color: #8060cc; }
+    .card-pink   { background: #fdeef4; border-color: #c05080; }
+    .card-warm   { background: #fff4e4; border-color: #c07820; }
+
+    table { width: 100%; border-collapse: collapse; margin: 10px 0 4px; font-size: 0.97rem; }
+    th { background: #e8e0f8; color: #2a1a60; padding: 10px 14px; text-align: left; }
+    td { padding: 10px 14px; border-bottom: 1px solid #e0daf0; }
+    tr:last-child td { border-bottom: none; }
+    tr:nth-child(even) td { background: #f8f6ff; }
+
+    code {
+      background: #ede8fe; color: #4a1890;
+      padding: 2px 7px; border-radius: 5px;
+      font-family: 'Consolas', 'Courier New', monospace;
+      font-size: 0.9em;
+    }
+
+    pre {
+      background: #1e1c30; color: #e8e4f8;
+      padding: 18px 20px; border-radius: 10px;
+      overflow-x: auto; margin: 12px 0;
+      font-size: 0.92rem; line-height: 1.65;
+      font-family: 'Consolas', monospace;
+    }
+
+    details {
+      background: white; border-radius: 10px;
+      border: 1px solid #ddd8f0;
+      margin-bottom: 10px; overflow: hidden;
+    }
+    summary {
+      padding: 15px 20px;
+      cursor: pointer;
+      font-weight: 700;
+      color: #2a1a60;
+      list-style: none;
+      display: flex; align-items: center; gap: 10px;
+      user-select: none;
+    }
+    summary::-webkit-details-marker { display: none; }
+    summary .arrow { font-size: 0.8em; transition: transform 0.2s; }
+    details[open] summary .arrow { transform: rotate(90deg); }
+    .details-body { padding: 4px 20px 20px; border-top: 1px solid #ede8f8; }
+
+    .tag {
+      display: inline-block; background: #ede8fe; color: #5030a0;
+      padding: 3px 11px; border-radius: 20px;
+      font-size: 0.82rem; font-weight: 600; margin: 2px;
+    }
+
+    .step {
+      display: flex; gap: 14px; align-items: flex-start;
+      margin-bottom: 14px;
+    }
+    .step-num {
+      background: #8060cc; color: white;
+      border-radius: 50%; width: 30px; height: 30px;
+      display: flex; align-items: center; justify-content: center;
+      font-weight: 700; font-size: 0.9rem; flex-shrink: 0; margin-top: 4px;
+    }
+
+    .limitation-item {
+      background: #fff8e6; border-left: 4px solid #d09020;
+      padding: 10px 14px; border-radius: 6px; margin-bottom: 8px;
+    }
+
+    .arch-box {
+      background: #1e1c30; color: #c8e0f8;
+      padding: 18px 20px; border-radius: 10px;
+      font-family: monospace; font-size: 0.88rem; line-height: 1.7;
+      overflow-x: auto; margin: 10px 0;
+    }
+  </style>
+</head>
+<body>
+<div class="container">
+
+  <h1>RAG Assistant</h1>
+  <p class="subtitle">Contextual Search &amp; Response API — Production RAG System</p>
+  <a class="live-badge" href="https://rag-assistant-v10v.onrender.com/docs" target="_blank">● Live API</a>
+
+  <nav class="nav">
+    <a href="#what">What is this?</a>
+    <a href="#how">How it works</a>
+    <a href="#tech">Tech stack</a>
+    <a href="#start">Quick start</a>
+    <a href="#api">API endpoints</a>
+    <a href="#qa">Interview Q&amp;A</a>
+    <a href="#limits">Limitations</a>
+  </nav>
+
+  <!-- WHAT IS THIS -->
+  <div class="card card-blue" id="what">
+    <h2>What is this?</h2>
+    <p>A <strong>Retrieval-Augmented Generation (RAG)</strong> system. You give it documents — PDFs, text files, markdown — and you can ask questions in plain English and get grounded answers with inline citations.</p>
+    <p>The key idea: the LLM only answers from your documents, not from its training data. Every claim is cited back to the source chunk. This eliminates hallucination for in-domain questions.</p>
+    <p>The interesting part is the retrieval architecture — it combines <strong>dense vector search</strong> with <strong>BM25 keyword search</strong>, fuses the results, then reranks with the <strong>Cohere API</strong> before passing context to the LLM. That two-stage pattern is what separates production RAG from demo RAG.</p>
+  </div>
+
+  <!-- HOW IT WORKS -->
+  <div class="card card-green" id="how">
+    <h2>How it works</h2>
+
+    <h3 style="margin-top:8px;">Ingestion (once per document)</h3>
+    <div class="step"><div class="step-num">1</div><div><strong>Load</strong> — PDF text extracted page by page with <code>pypdf</code>. Text files read directly.</div></div>
+    <div class="step"><div class="step-num">2</div><div><strong>Chunk</strong> — Split at sentence boundaries using <code>tiktoken</code> token counting. 512 tokens per chunk, 64-token overlap.</div></div>
+    <div class="step"><div class="step-num">3</div><div><strong>Embed</strong> — Each chunk sent to OpenAI <code>text-embedding-3-small</code> → 1536-dimensional vector.</div></div>
+    <div class="step"><div class="step-num">4</div><div><strong>Store</strong> — Chunk text + embedding + metadata upserted into Pinecone serverless index.</div></div>
+
+    <h3 style="margin-top:14px;">Query (every user question)</h3>
+    <div class="step"><div class="step-num">1</div><div><strong>Embed query</strong> — Same <code>text-embedding-3-small</code> model.</div></div>
+    <div class="step"><div class="step-num">2</div><div><strong>Hybrid retrieve</strong> — Dense (Pinecone ANN) + Sparse (BM25) run in parallel → top 20 each.</div></div>
+    <div class="step"><div class="step-num">3</div><div><strong>RRF fusion</strong> — Reciprocal Rank Fusion combines the two lists. No weights to tune.</div></div>
+    <div class="step"><div class="step-num">4</div><div><strong>Rerank</strong> — Top 20 sent to Cohere Rerank API. Scores each (query, chunk) pair jointly → top 3 survive.</div></div>
+    <div class="step"><div class="step-num">5</div><div><strong>Generate</strong> — Top 3 chunks become numbered context. GPT-4o-mini instructed to cite by number [1] [2].</div></div>
+    <div class="step"><div class="step-num">6</div><div><strong>Return</strong> — Answer, cited sources, token count, per-stage latency.</div></div>
+  </div>
+
+  <!-- TECH STACK -->
+  <div class="card card-yellow" id="tech">
+    <h2>Tech stack</h2>
+    <table>
+      <tr><th>Layer</th><th>Technology</th></tr>
+      <tr><td>LLM</td><td><code>gpt-4o-mini</code></td></tr>
+      <tr><td>Embeddings</td><td><code>text-embedding-3-small</code> (1536-dim)</td></tr>
+      <tr><td>Vector store</td><td>Pinecone (serverless)</td></tr>
+      <tr><td>Sparse retrieval</td><td>BM25 via <code>rank-bm25</code></td></tr>
+      <tr><td>Reranker</td><td>Cohere Rerank API via <code>httpx</code></td></tr>
+      <tr><td>API</td><td>FastAPI + uvicorn</td></tr>
+      <tr><td>Frontend</td><td>Streamlit</td></tr>
+      <tr><td>Config</td><td><code>pydantic-settings</code></td></tr>
+      <tr><td>Logging</td><td><code>structlog</code></td></tr>
+    </table>
+    <p style="margin-top:14px;">
+      <span class="tag">Python</span>
+      <span class="tag">OpenAI API</span>
+      <span class="tag">Pinecone</span>
+      <span class="tag">Cohere</span>
+      <span class="tag">FastAPI</span>
+      <span class="tag">BM25</span>
+      <span class="tag">Pydantic v2</span>
+      <span class="tag">Docker</span>
+      <span class="tag">Render</span>
+    </p>
+  </div>
+
+  <!-- QUICK START -->
+  <div class="card card-green" id="start">
+    <h2>Quick start</h2>
+    <p><strong>Environment variables needed:</strong></p>
+    <table>
+      <tr><th>Variable</th><th>Required?</th><th>Purpose</th></tr>
+      <tr><td><code>OPENAI_API_KEY</code></td><td>Yes</td><td>Embeddings + generation</td></tr>
+      <tr><td><code>PINECONE_API_KEY</code></td><td>Yes</td><td>Vector store</td></tr>
+      <tr><td><code>COHERE_API_KEY</code></td><td>No</td><td>Reranking (falls back to embedding scores if absent)</td></tr>
+    </table>
+    <pre>pip install -r requirements.txt
+cp .env.example .env   # fill in your keys
+uvicorn src.api.main:app --reload</pre>
+    <p><strong>With Docker:</strong></p>
+    <pre>docker compose up --build</pre>
+    <p>API → <code>localhost:8000</code> &nbsp;·&nbsp; Swagger → <code>localhost:8000/docs</code> &nbsp;·&nbsp; Frontend → <code>localhost:8501</code></p>
+    <p><strong>Ingest a document:</strong></p>
+    <pre>curl -X POST localhost:8000/ingest -F "file=@report.pdf"</pre>
+    <p><strong>Ask a question:</strong></p>
+    <pre>curl -X POST localhost:8000/query \
+  -H "Content-Type: application/json" \
+  -d '{"question": "What were the key findings?", "conversation_id": "s1"}'</pre>
+  </div>
+
+  <!-- API ENDPOINTS -->
+  <div class="card card-blue" id="api">
+    <h2>API endpoints</h2>
+    <table>
+      <tr><th>Method</th><th>Path</th><th>What it does</th></tr>
+      <tr><td><code>GET</code></td><td><code>/health</code></td><td>Service status, model names, documents indexed</td></tr>
+      <tr><td><code>POST</code></td><td><code>/query</code></td><td>Ask a question, get a grounded answer with citations</td></tr>
+      <tr><td><code>POST</code></td><td><code>/ingest</code></td><td>Upload a PDF, TXT, or Markdown file</td></tr>
+      <tr><td><code>GET</code></td><td><code>/metrics</code></td><td>Query count, latency, token usage</td></tr>
+      <tr><td><code>GET</code></td><td><code>/documents</code></td><td>List all indexed documents and chunk counts</td></tr>
+      <tr><td><code>DELETE</code></td><td><code>/conversation/{id}</code></td><td>Clear a conversation's history</td></tr>
+      <tr><td><code>GET</code></td><td><code>/docs</code></td><td>Interactive Swagger UI</td></tr>
+    </table>
+  </div>
+
+  <!-- INTERVIEW Q&A -->
+  <div class="card card-purple" id="qa">
+    <h2>Interview Q&amp;A</h2>
+    <p style="margin-bottom:16px; color:#5e5880; font-size:0.95rem;">Click any question to read the answer.</p>
+
+    <details>
+      <summary><span class="arrow">▶</span> What is RAG and why does it matter?</summary>
+      <div class="details-body">
+        <p>RAG grounds LLM answers in real documents rather than training data. Without RAG, an LLM answers from memory — which may be outdated or wrong for your specific domain. With RAG, the model only sees your documents at inference time. Every claim is verifiable. This eliminates hallucination for in-domain questions and makes the system auditable.</p>
+      </div>
+    </details>
+
+    <details>
+      <summary><span class="arrow">▶</span> What is the difference between a bi-encoder and a cross-encoder?</summary>
+      <div class="details-body">
+        <p>A <strong>bi-encoder</strong> encodes the query and each document separately into the same vector space. Retrieval is a nearest-neighbour lookup — fast and scalable, but the two texts never interact during encoding.</p>
+        <p>A <strong>cross-encoder</strong> takes the concatenated pair [query, document] as a single input. Every attention head can look at both query and document tokens together. This produces much more accurate relevance scores — but it requires one forward pass per candidate, so it's too slow for large corpora.</p>
+        <p>This system uses <strong>bi-encoder for retrieval</strong> (fast, top 20 candidates) and <strong>Cohere's cross-encoder reranker for scoring</strong> (accurate, small candidate set). Best of both worlds.</p>
+      </div>
+    </details>
+
+    <details>
+      <summary><span class="arrow">▶</span> Why hybrid retrieval — dense + BM25?</summary>
+      <div class="details-body">
+        <p><strong>Dense search</strong> finds semantic matches — "what causes high interest rates?" finds text about monetary policy even without those exact words. But it can miss specific named entities: model numbers, person names, rare technical terms.</p>
+        <p><strong>BM25</strong> does exact keyword matching — perfect at finding "Sarah Mitchell" or "CFO Q3" but blind to paraphrasing.</p>
+        <p>Each covers the other's failure mode. The cost is negligible — BM25 adds ~10ms. RRF fusion combines both lists without any tuning parameters.</p>
+      </div>
+    </details>
+
+    <details>
+      <summary><span class="arrow">▶</span> What is RRF and why use it over weighted scoring?</summary>
+      <div class="details-body">
+        <p>RRF formula: <code>score = sum(1 / (k + rank_i))</code> where k=60.</p>
+        <p>A weighted combination like <code>0.7 × dense + 0.3 × bm25</code> requires tuning those weights, and the right weights are domain-specific — they differ for legal documents vs technical manuals. You'd need labelled data.</p>
+        <p>RRF only uses rank positions, not raw scores — so it doesn't matter that cosine similarity and BM25 scores have different scales. It's parameter-free and empirically robust across domains since the original 2009 paper.</p>
+      </div>
+    </details>
+
+    <details>
+      <summary><span class="arrow">▶</span> Why Cohere Rerank API instead of a local model?</summary>
+      <div class="details-body">
+        <p>A local cross-encoder (e.g. <code>cross-encoder/ms-marco-MiniLM-L-6-v2</code> via <code>sentence-transformers</code>) requires PyTorch. Even the CPU-only build allocates <strong>300–400 MB of RAM at import time</strong>. On Render free tier (512 MB limit), this crashes the service before the first request is served.</p>
+        <p>The Cohere Rerank API is a single HTTP POST via <code>httpx</code> — zero local model, zero PyTorch, zero RAM overhead. Equivalent cross-encoder quality server-side. Free tier covers 1,000 requests/month. If the key is absent or the call fails, the system falls back to embedding-score ordering gracefully.</p>
+      </div>
+    </details>
+
+    <details>
+      <summary><span class="arrow">▶</span> Why Pinecone instead of ChromaDB?</summary>
+      <div class="details-body">
+        <p>ChromaDB runs in-process and persists to local disk. Two problems for production:</p>
+        <ul>
+          <li><strong>Ephemeral storage</strong> — Render free tier has no persistent disk. Every redeploy wipes the index.</li>
+          <li><strong>RAM</strong> — ChromaDB's HNSW index loads into process memory alongside the app.</li>
+        </ul>
+        <p>Pinecone is a managed serverless vector database. The index persists in Pinecone's infrastructure, survives redeploys, and has zero in-process RAM cost. The tradeoff is an API call per query (~50–100ms latency), which is acceptable.</p>
+      </div>
+    </details>
+
+    <details>
+      <summary><span class="arrow">▶</span> What are the failure modes?</summary>
+      <div class="details-body">
+        <ul>
+          <li><strong>Out-of-distribution questions</strong> — if the answer isn't in the documents, the LLM may still stretch the retrieved context. Hallucination at the boundary is the hardest to catch.</li>
+          <li><strong>Large document corpora</strong> — BM25 rebuilds from scratch on every query (no caching). For 10k+ chunks this becomes slow.</li>
+          <li><strong>Vague queries</strong> — short ambiguous questions produce weak embeddings and poor BM25 signals.</li>
+          <li><strong>Chunking artifacts</strong> — the sentence boundary regex fails on bullet points, tables, and code blocks.</li>
+          <li><strong>Cohere API dependency</strong> — if the API is down, reranking falls back to embedding-score ordering. Quality degrades but the service stays up.</li>
+        </ul>
+      </div>
+    </details>
+
+    <details>
+      <summary><span class="arrow">▶</span> How would you evaluate retrieval quality?</summary>
+      <div class="details-body">
+        <p><strong>Retrieval metrics:</strong></p>
+        <ul>
+          <li><strong>Recall@k</strong> — of all chunks containing the answer, what fraction are in the top-k?</li>
+          <li><strong>MRR</strong> — Mean Reciprocal Rank. <code>1 / rank_of_first_relevant_chunk</code>.</li>
+          <li><strong>NDCG</strong> — accounts for graded relevance and position.</li>
+        </ul>
+        <p><strong>End-to-end quality (RAGAS framework):</strong></p>
+        <ul>
+          <li><strong>Faithfulness</strong> — is every claim grounded in the retrieved context?</li>
+          <li><strong>Answer relevance</strong> — does the answer address the question?</li>
+          <li><strong>Context precision</strong> — of retrieved chunks, how many were actually used?</li>
+          <li><strong>Context recall</strong> — does the context contain all needed information?</li>
+        </ul>
+      </div>
+    </details>
+
+    <details>
+      <summary><span class="arrow">▶</span> How would you scale this?</summary>
+      <div class="details-body">
+        <ul>
+          <li><strong>Cache BM25 index</strong> — currently rebuilt on every query. Store in Redis, update on ingest.</li>
+          <li><strong>Async Cohere call</strong> — switch from synchronous <code>httpx.post</code> to <code>httpx.AsyncClient</code> to avoid blocking the event loop under concurrent load.</li>
+          <li><strong>Query cache</strong> — LRU cache on the question string so repeated queries skip OpenAI calls.</li>
+          <li><strong>Pinecone namespaces</strong> — isolate document sets per user or organisation.</li>
+        </ul>
+      </div>
+    </details>
+
+    <details>
+      <summary><span class="arrow">▶</span> What does a query cost?</summary>
+      <div class="details-body">
+        <table>
+          <tr><th>Step</th><th>Approximate cost</th></tr>
+          <tr><td>Embedding (query)</td><td>~$0.0000004 — negligible</td></tr>
+          <tr><td>Cohere rerank</td><td>Free (≤1,000/month); ~$0.001 paid</td></tr>
+          <tr><td>GPT-4o-mini generation</td><td>~$0.0006 per query</td></tr>
+        </table>
+        <p style="margin-top:10px;">Roughly <strong>$0.60–1.60 per 1,000 queries</strong>. Ingesting a 100-page PDF costs ~$0.001.</p>
+      </div>
+    </details>
+
+    <details>
+      <summary><span class="arrow">▶</span> Why not use LangChain or LlamaIndex?</summary>
+      <div class="details-body">
+        <p>I know both well. The decision was deliberate. For a portfolio project, native implementation makes the architecture visible. When someone reads <code>HybridRetriever.retrieve()</code>, they see the BM25 call, the dense call, and the RRF fusion in plain code.</p>
+        <p>LangChain was removed specifically because it was only used for <code>RecursiveCharacterTextSplitter</code> — an 80-line replacement. That's a bad dependency ratio.</p>
+        <p>In production I'd reconsider — LangChain's integration ecosystem (dozens of vector stores, tracing callbacks) has real value. LlamaIndex is particularly good for complex document structures. The tradeoff is abstraction vs. transparency.</p>
+      </div>
+    </details>
+  </div>
+
+  <!-- LIMITATIONS -->
+  <div class="card card-warm" id="limits">
+    <h2>Honest limitations</h2>
+    <div class="limitation-item">BM25 index rebuilds from scratch on every query. For 10k+ chunks this would be noticeably slow. Production fix: cache in Redis, update on ingest.</div>
+    <div class="limitation-item">No evaluation harness. RAGAS would be added before treating this as production-ready.</div>
+    <div class="limitation-item">Conversation history is in-process memory. Restarting the API loses all conversations. Production fix: persist to Redis with a TTL.</div>
+    <div class="limitation-item">The sentence boundary regex fails on bullet points, tables, and code blocks.</div>
+    <div class="limitation-item">No authentication on API endpoints. Any caller can ingest or query.</div>
+    <div class="limitation-item">The Cohere rerank call is synchronous inside the async pipeline. Under concurrent load this blocks the event loop. Fix: switch to <code>httpx.AsyncClient</code>.</div>
+    <div class="limitation-item">Pinecone free tier has index size limits — fine for a portfolio demo, not for large corpora.</div>
+  </div>
+
+</div>
+</body>
+</html>

@@ -1,6 +1,6 @@
 # RAG Assistant — v2
 
-Retrieval-Augmented Generation system with hybrid retrieval and cross-encoder reranking. Accepts PDF and text documents, indexes them in ChromaDB, and answers questions with inline citations.
+Retrieval-Augmented Generation system with hybrid retrieval and Cohere reranking. Accepts PDF and text documents, indexes them in Pinecone, and answers questions with inline citations.
 
 ## Tech stack
 
@@ -8,9 +8,9 @@ Retrieval-Augmented Generation system with hybrid retrieval and cross-encoder re
 |---|---|
 | LLM | `gpt-4o-mini` |
 | Embeddings | `text-embedding-3-small` (1536-dim) |
-| Vector store | ChromaDB (persistent, HNSW) |
+| Vector store | Pinecone (serverless) |
 | Sparse retrieval | BM25 (`rank-bm25`) |
-| Reranker | `cross-encoder/ms-marco-MiniLM-L-6-v2` |
+| Reranker | Cohere Rerank API (`rerank-v3.5`) via `httpx` |
 | API | FastAPI + uvicorn |
 | Frontend | Streamlit |
 | Config | `pydantic-settings` |
@@ -25,14 +25,14 @@ Retrieval-Augmented Generation system with hybrid retrieval and cross-encoder re
 └──────────────┘            │  POST /ingest ──► DocumentIngestor            │
                             │                    └─ SentenceAwareChunker    │
                             │                    └─ OpenAIEmbedder          │
-                            │                    └─ ChromaDB (upsert)       │
+                            │                    └─ Pinecone (upsert)       │
                             │                                               │
                             │  POST /query ───► RAGPipeline                 │
                             │                    └─ HybridRetriever         │
-                            │                        ├─ Dense (ChromaDB)    │
+                            │                        ├─ Dense (Pinecone)    │
                             │                        ├─ Sparse (BM25)       │
                             │                        └─ RRF fusion          │
-                            │                    └─ CrossEncoderReranker    │
+                            │                    └─ CohereReranker          │
                             │                    └─ RAGGenerator (gpt-4o-mini) │
                             └───────────────────────────────────────────────┘
 ```
@@ -44,9 +44,9 @@ Retrieval-Augmented Generation system with hybrid retrieval and cross-encoder re
 | Embedding model | `text-embedding-ada-002` | `text-embedding-3-small` | Better MTEB scores, cheaper, supports dimensionality reduction |
 | LLM | `gpt-3.5-turbo` | `gpt-4o-mini` | Better instruction following for citation format, higher knowledge cutoff |
 | Chunking | `RecursiveCharacterTextSplitter` (1000 chars) | `SentenceAwareChunker` (512 tokens) | Never cuts mid-sentence; token-based sizes align with LLM context windows |
-| Vector store | Custom JSON file | ChromaDB (persistent) | Real HNSW ANN indexing, metadata filtering, no manual serialisation |
+| Vector store | Custom JSON file → ChromaDB | Pinecone (serverless) | Managed hosting, no local storage, zero RAM overhead vs ChromaDB's HNSW in-process |
 | Retrieval | Dense-only, top-3 | Dense + BM25 + RRF, top-10 before rerank | Sparse leg catches exact-term matches that embeddings miss |
-| Reranking | None | `cross-encoder/ms-marco-MiniLM-L-6-v2` | Bi-encoders can't model query-doc interaction; cross-encoders produce far more accurate relevance scores |
+| Reranker | None → CrossEncoder (local) | Cohere Rerank API via `httpx` | Local sentence-transformers + PyTorch = 400 MB RAM at import; Cohere is an HTTP call with zero local overhead |
 | PDF parsing | `PyPDF2` (deprecated 2023) | `pypdf` | PyPDF2 is unmaintained; pypdf is the official successor |
 | Configuration | Plain class with `os.getenv` | `pydantic-settings` `BaseSettings` | Type validation, automatic env-var binding, clear failure if required vars missing |
 | Monitoring | `print()` | `structlog` + `/metrics` endpoint | Machine-readable logs, latency/token tracking exposed via API |
@@ -57,7 +57,8 @@ Retrieval-Augmented Generation system with hybrid retrieval and cross-encoder re
 
 ```bash
 pip install -r requirements.txt
-cp .env.example .env          # set OPENAI_API_KEY
+cp .env.example .env          # set OPENAI_API_KEY, PINECONE_API_KEY
+                              # optionally set COHERE_API_KEY for reranking
 python -m uvicorn src.api.main:app --reload
 streamlit run src/app.py      # optional frontend
 ```
@@ -70,6 +71,14 @@ docker compose up --build
 ```
 
 API → `localhost:8000` · Frontend → `localhost:8501` · Swagger → `localhost:8000/docs`
+
+**Required environment variables:**
+
+| Variable | Required | Description |
+|---|---|---|
+| `OPENAI_API_KEY` | Yes | Embeddings + generation |
+| `PINECONE_API_KEY` | Yes | Vector store |
+| `COHERE_API_KEY` | No | Reranking (falls back to embedding score order if absent) |
 
 ## Usage
 
@@ -118,11 +127,11 @@ pytest tests/ -v
 │   │   ├── chunker.py       # Sentence-aware token-counted chunker
 │   │   ├── embedder.py      # OpenAI text-embedding-3-small
 │   │   ├── retriever.py     # Hybrid dense+BM25 retrieval with RRF
-│   │   ├── reranker.py      # Cross-encoder reranker
+│   │   ├── reranker.py      # Cohere Rerank API via httpx
 │   │   ├── generator.py     # GPT-4o-mini answer generation
 │   │   └── pipeline.py      # Orchestration
 │   ├── store/
-│   │   └── chroma_store.py  # ChromaDB wrapper
+│   │   └── pinecone_store.py  # Pinecone wrapper
 │   ├── ingestion/
 │   │   └── ingest.py        # PDF + text document loader
 │   ├── monitoring/
@@ -132,8 +141,7 @@ pytest tests/ -v
 │   ├── test_chunker.py
 │   └── test_pipeline.py
 ├── data/
-│   ├── raw/                 # Drop source documents here
-│   └── chroma/              # ChromaDB persistence (auto-created)
+│   └── raw/                 # Drop source documents here
 ├── docker-compose.yml
 ├── Dockerfile
 └── requirements.txt

@@ -1,0 +1,293 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Resume Screening — Docs</title>
+  <link href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:ital,wght@0,400;0,700;1,400&display=swap" rel="stylesheet">
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: 'Atkinson Hyperlegible', 'Segoe UI', Arial, sans-serif;
+      background: #f7fafa; color: #1e2c2c; font-size: 1.12rem; line-height: 1.9;
+    }
+    .container { max-width: 780px; margin: 0 auto; padding: 36px 24px 80px; }
+    h1 { font-size: 1.9rem; color: #0a2828; margin-bottom: 6px; }
+    h2 { font-size: 1.25rem; color: #0a2828; margin-bottom: 14px; }
+    h3 { font-size: 1.05rem; color: #183838; margin-bottom: 8px; }
+    p  { margin-bottom: 14px; }
+    ul, ol { margin: 6px 0 14px 24px; }
+    li { margin-bottom: 8px; }
+    .subtitle { color: #406060; font-size: 1rem; margin-bottom: 24px; }
+    .nav { display: flex; gap: 10px; flex-wrap: wrap; margin-bottom: 28px; }
+    .nav a {
+      background: #d0eef0; color: #0a4848; padding: 7px 16px;
+      border-radius: 20px; text-decoration: none; font-size: 0.88rem; font-weight: 600;
+    }
+    .nav a:hover { background: #b8e0e4; }
+    .card { border-radius: 14px; padding: 26px 28px; margin-bottom: 18px; border-left: 5px solid; }
+    .card-blue   { background: #eef8f8; border-color: #3aa0a0; }
+    .card-green  { background: #eef8f0; border-color: #4daa60; }
+    .card-yellow { background: #fdf8ec; border-color: #c8980a; }
+    .card-teal   { background: #e8f8f6; border-color: #3a9090; }
+    .card-warm   { background: #fff4e4; border-color: #c07820; }
+    table { width: 100%; border-collapse: collapse; margin: 10px 0 4px; font-size: 0.97rem; }
+    th { background: #c8eaec; color: #0a3838; padding: 10px 14px; text-align: left; }
+    td { padding: 10px 14px; border-bottom: 1px solid #c8e4e4; }
+    tr:last-child td { border-bottom: none; }
+    tr:nth-child(even) td { background: #f4fafa; }
+    code {
+      background: #c8eaea; color: #0a4040; padding: 2px 7px;
+      border-radius: 5px; font-family: 'Consolas', monospace; font-size: 0.9em;
+    }
+    pre {
+      background: #0a1a1a; color: #c8eaea; padding: 18px 20px;
+      border-radius: 10px; overflow-x: auto; margin: 12px 0;
+      font-size: 0.92rem; line-height: 1.65; font-family: 'Consolas', monospace;
+    }
+    details { background: white; border-radius: 10px; border: 1px solid #b8dede; margin-bottom: 10px; }
+    summary {
+      padding: 15px 20px; cursor: pointer; font-weight: 700; color: #0a3030;
+      list-style: none; display: flex; align-items: center; gap: 10px; user-select: none;
+    }
+    summary::-webkit-details-marker { display: none; }
+    summary .arrow { font-size: 0.8em; transition: transform 0.2s; }
+    details[open] summary .arrow { transform: rotate(90deg); }
+    .details-body { padding: 4px 20px 20px; border-top: 1px solid #c8e4e4; }
+    .tag {
+      display: inline-block; background: #c8eaea; color: #0a4040;
+      padding: 3px 11px; border-radius: 20px; font-size: 0.82rem; font-weight: 600; margin: 2px;
+    }
+    .step { display: flex; gap: 14px; align-items: flex-start; margin-bottom: 14px; }
+    .step-num {
+      background: #3a9090; color: white; border-radius: 50%; width: 30px; height: 30px;
+      display: flex; align-items: center; justify-content: center;
+      font-weight: 700; font-size: 0.9rem; flex-shrink: 0; margin-top: 4px;
+    }
+    .limitation-item {
+      background: #fff8e6; border-left: 4px solid #d09020;
+      padding: 10px 14px; border-radius: 6px; margin-bottom: 8px;
+    }
+    .schema-field {
+      background: #f0f8f8; border: 1px solid #b8dcdc;
+      padding: 10px 14px; border-radius: 8px; margin-bottom: 6px;
+    }
+    .bias-note {
+      background: #fff0f0; border-left: 4px solid #e05050;
+      padding: 12px 16px; border-radius: 8px; margin: 12px 0;
+    }
+  </style>
+</head>
+<body>
+<div class="container">
+
+  <h1>NLP Matching &amp; Scoring System</h1>
+  <p class="subtitle">AI-Powered Resume Screening — Semantic Embeddings + Pydantic v2 Validation</p>
+
+  <nav class="nav">
+    <a href="#what">What is this?</a>
+    <a href="#how">How it works</a>
+    <a href="#schema">Data schema</a>
+    <a href="#tech">Tech stack</a>
+    <a href="#start">Quick start</a>
+    <a href="#api">API endpoints</a>
+    <a href="#qa">Interview Q&amp;A</a>
+    <a href="#limits">Limitations</a>
+  </nav>
+
+  <!-- WHAT -->
+  <div class="card card-teal" id="what">
+    <h2>What is this?</h2>
+    <p>An AI-powered resume screening system. You give it a job description and a set of resumes (PDF, DOCX, or plain text), and it ranks candidates by how semantically similar their experience is to the role requirements.</p>
+    <p>Unlike keyword matching, <strong>semantic similarity</strong> understands that "built microservices" and "developed distributed services" mean the same thing. It uses a sentence-transformer model to encode both the job description and each resume as a vector, then scores them by cosine similarity.</p>
+    <p>It also includes a <strong>Pydantic v2 validation layer</strong> (schema compliance, date checking, duplicate detection), a <strong>data quality reporter</strong>, and a <strong>bias monitor</strong> for demographic parity analysis — important components for responsible deployment of automated hiring tools.</p>
+  </div>
+
+  <!-- HOW IT WORKS -->
+  <div class="card card-blue" id="how">
+    <h2>How it works — step by step</h2>
+    <div class="step"><div class="step-num">1</div><div><strong>Parse</strong> — PDF via <code>pypdf</code>, DOCX via <code>python-docx</code>, plain text directly.</div></div>
+    <div class="step"><div class="step-num">2</div><div><strong>Validate</strong> — each resume checked against <code>ResumeSchema</code> (Pydantic v2): required fields, email regex, date format, cross-field date logic.</div></div>
+    <div class="step"><div class="step-num">3</div><div><strong>Embed</strong> — <code>all-MiniLM-L6-v2</code> from sentence-transformers encodes resume text → 384-dimensional vector.</div></div>
+    <div class="step"><div class="step-num">4</div><div><strong>Score</strong> — cosine similarity between each resume vector and the job description vector.</div></div>
+    <div class="step"><div class="step-num">5</div><div><strong>Rank</strong> — candidates sorted by score, assigned a tier: <em>strong / good / borderline</em>.</div></div>
+    <div class="step"><div class="step-num">6</div><div><strong>Report</strong> — data quality metrics + bias analysis (demographic parity, equal opportunity).</div></div>
+  </div>
+
+  <!-- SCHEMA -->
+  <div class="card card-yellow" id="schema">
+    <h2>Data schema — what gets validated</h2>
+    <p>Every resume is validated against <code>ResumeSchema</code> (Pydantic v2) before it reaches the embedding pipeline:</p>
+    <div class="schema-field"><strong>ContactInfo</strong> — email (regex-validated), optional phone, LinkedIn, GitHub</div>
+    <div class="schema-field"><strong>Skill</strong> — name, optional level (<code>beginner / intermediate / advanced / expert</code>), years of experience</div>
+    <div class="schema-field"><strong>Education</strong> — degree, institution, graduation year, GPA</div>
+    <div class="schema-field"><strong>Experience</strong> — title, company, ISO date range, description (20–2000 chars), skills used</div>
+    <div class="schema-field"><strong>Cross-field validator</strong> — checks <code>start_date &lt; end_date</code> for every experience entry. Any violation raises a <code>ValidationError</code> with field-level detail before the record reaches the model.</div>
+    <div class="bias-note">
+      <strong>Bias note:</strong> automated resume screening is a high-stakes application. The <code>BiasMonitor</code> measures <em>demographic parity</em> (equal selection rate across groups) and <em>equal opportunity</em> (equal true positive rate). Its presence is a deliberate design decision — not just a feature checkbox.
+    </div>
+  </div>
+
+  <!-- TECH -->
+  <div class="card card-yellow" id="tech">
+    <h2>Tech stack</h2>
+    <table>
+      <tr><th>Component</th><th>Tool</th></tr>
+      <tr><td>Embeddings</td><td>sentence-transformers <code>all-MiniLM-L6-v2</code> (384-dim)</td></tr>
+      <tr><td>PDF parsing</td><td><code>pypdf</code> (maintained successor to deprecated PyPDF2)</td></tr>
+      <tr><td>Schema validation</td><td>Pydantic v2 (<code>field_validator</code>, <code>model_validator</code>)</td></tr>
+      <tr><td>Config</td><td><code>pydantic-settings</code> with <code>.env</code> support</td></tr>
+      <tr><td>API</td><td>FastAPI + Uvicorn</td></tr>
+      <tr><td>Data quality</td><td>pandas assertions + <code>DataQualityMetrics</code> schema</td></tr>
+      <tr><td>Bias monitoring</td><td><code>BiasMonitor</code> (demographic parity, equal opportunity)</td></tr>
+      <tr><td>Test data</td><td>Faker-based synthetic resume generator</td></tr>
+    </table>
+    <p style="margin-top:14px;">
+      <span class="tag">Python</span>
+      <span class="tag">sentence-transformers</span>
+      <span class="tag">Pydantic v2</span>
+      <span class="tag">FastAPI</span>
+      <span class="tag">pypdf</span>
+      <span class="tag">pandas</span>
+      <span class="tag">Faker</span>
+      <span class="tag">Docker</span>
+    </p>
+  </div>
+
+  <!-- QUICK START -->
+  <div class="card card-green" id="start">
+    <h2>Quick start</h2>
+    <pre>pip install -r requirements.txt
+
+# Generate synthetic test resumes
+python -m src.data_generation.resume_generator
+
+# Start API
+uvicorn src.api.main:app --reload</pre>
+    <p>Swagger docs: <code>http://localhost:8000/docs</code></p>
+    <p><strong>Run the matching pipeline:</strong></p>
+    <pre>curl -X POST http://localhost:8000/rank \
+  -H "Content-Type: application/json" \
+  -d '{
+    "job_description": "Senior Python engineer with FastAPI and cloud experience.",
+    "resume_ids": ["candidate_001", "candidate_002"]
+  }'</pre>
+  </div>
+
+  <!-- API -->
+  <div class="card card-blue" id="api">
+    <h2>API endpoints</h2>
+    <table>
+      <tr><th>Method</th><th>Path</th><th>What it does</th></tr>
+      <tr><td><code>GET</code></td><td><code>/health</code></td><td>Liveness check</td></tr>
+      <tr><td><code>POST</code></td><td><code>/upload</code></td><td>Upload a resume (PDF/DOCX/text) — validates and stores</td></tr>
+      <tr><td><code>POST</code></td><td><code>/rank</code></td><td>Rank candidates against a job description</td></tr>
+      <tr><td><code>GET</code></td><td><code>/quality</code></td><td>Data quality report for the current resume dataset</td></tr>
+      <tr><td><code>GET</code></td><td><code>/bias</code></td><td>Demographic parity and equal opportunity analysis</td></tr>
+    </table>
+  </div>
+
+  <!-- Q&A -->
+  <div class="card card-teal" id="qa">
+    <h2>Interview Q&amp;A</h2>
+    <p style="margin-bottom:16px; color:#406060; font-size:0.95rem;">Click any question to read the answer.</p>
+
+    <details>
+      <summary><span class="arrow">▶</span> How does semantic similarity between a resume and job description actually work?</summary>
+      <div class="details-body">
+        <p>Both the resume text and job description text are passed through the same sentence-transformer model, producing fixed-length vectors (384 dims for MiniLM).</p>
+        <p><strong>Cosine similarity</strong> = dot_product(A, B) / (|A| × |B|) → score in [-1, 1] where 1 = identical direction.</p>
+        <p>Unlike keyword matching, semantic similarity captures paraphrasing: "built microservices" ≈ "developed distributed services". Candidates with scores closer to 1.0 are semantically more aligned with the job description.</p>
+      </div>
+    </details>
+
+    <details>
+      <summary><span class="arrow">▶</span> Why cosine similarity instead of euclidean distance?</summary>
+      <div class="details-body">
+        <p>Embeddings encode <em>direction</em>, not magnitude. A long resume and a short resume about the same candidate would have different vector lengths, making euclidean distance misleading — the longer document would appear "farther away" just because it's longer.</p>
+        <p>Cosine similarity measures the angle between vectors — it's <strong>length-invariant</strong>. This is the standard for comparing sentence embeddings and is what the models were trained to optimise.</p>
+      </div>
+    </details>
+
+    <details>
+      <summary><span class="arrow">▶</span> What is all-MiniLM-L6-v2 and why this model?</summary>
+      <div class="details-body">
+        <p><code>all-MiniLM-L6-v2</code> is a 22M parameter model fine-tuned on 1 billion+ sentence pairs for semantic similarity (SBERT: Sentence-BERT). It produces 384-dimensional embeddings.</p>
+        <p><strong>Why this over a larger model?</strong> It's fast (suitable for batch processing many resumes), small enough to run on CPU, and strong enough for resume-job matching. The larger alternative (<code>all-mpnet-base-v2</code>) has 110M parameters and 768 dims — ~5x slower with modestly better accuracy. For initial screening at volume, MiniLM is the right tradeoff.</p>
+      </div>
+    </details>
+
+    <details>
+      <summary><span class="arrow">▶</span> Walk me through the Pydantic ResumeSchema. What does the cross-field validator check?</summary>
+      <div class="details-body">
+        <p><code>@field_validator("skills")</code> enforces max 50 skills per candidate.</p>
+        <p><code>@field_validator("experience")</code> iterates all experience entries and checks that <code>start_date &lt;= end_date</code> (when end_date is not "present") using ISO date string comparison — <code>"2020-01-01" > "2019-06-01"</code> works lexicographically.</p>
+        <p><code>ContactInfo</code> applies regex patterns directly in <code>Field(pattern=...)</code> — Pydantic v2 evaluates these at the class level using the annotated-types Rust core. Any validation failure raises <code>ValidationError</code> with field-level detail <em>before</em> the record reaches the embedding pipeline.</p>
+      </div>
+    </details>
+
+    <details>
+      <summary><span class="arrow">▶</span> What bias can occur in embedding-based resume screening?</summary>
+      <div class="details-body">
+        <p>Several types:</p>
+        <ul>
+          <li><strong>Training data bias</strong> — the sentence-transformer was trained on web text, which reflects societal biases. It may score resumes from underrepresented groups lower even for equivalent experience.</li>
+          <li><strong>Proxy discrimination</strong> — similarity to "ideal candidate" descriptions can encode gender/age/ethnicity via correlated language patterns.</li>
+          <li><strong>Recency bias</strong> — candidates from highly-ranked institutions may use the same language as the job description authors from those institutions.</li>
+        </ul>
+        <p>The <code>BiasMonitor</code> measures <strong>demographic parity</strong> (equal selection rate across groups) and <strong>equal opportunity</strong> (equal true positive rate across groups). Real bias monitoring requires labelled demographic data — the current implementation is a structured placeholder that demonstrates the design intent.</p>
+      </div>
+    </details>
+
+    <details>
+      <summary><span class="arrow">▶</span> How would you scale from 100 to 100,000 resumes?</summary>
+      <div class="details-body">
+        <ul>
+          <li><strong>Batch embeddings</strong> — <code>model.encode(texts, batch_size=64)</code> instead of one-at-a-time. sentence-transformers already supports this.</li>
+          <li><strong>Vector store</strong> — rather than computing similarity from scratch each query, store embeddings in a vector database (Pinecone, pgvector, ChromaDB) and use ANN search. Current design is O(N) per query.</li>
+          <li><strong>Async processing</strong> — move parsing + embedding to a task queue (Celery, Redis Queue) so the API returns immediately and results are polled.</li>
+        </ul>
+        <p>Under 1,000 resumes, the current design is fine. Above that, the ANN search becomes the bottleneck.</p>
+      </div>
+    </details>
+
+    <details>
+      <summary><span class="arrow">▶</span> Why did you remove SQLAlchemy from requirements?</summary>
+      <div class="details-body">
+        <p>It was listed in <code>requirements.txt</code> but not imported anywhere in <code>src/</code>. This is a common inherited dependency smell — someone planned a database layer, added the requirement, but never implemented it.</p>
+        <p>Keeping it adds install time, potential security surface area, and confusion for code reviewers. If a database layer is added later, the requirement can be restored with intention.</p>
+      </div>
+    </details>
+
+    <details>
+      <summary><span class="arrow">▶</span> How would you handle scanned PDFs (images, not digital text)?</summary>
+      <div class="details-body">
+        <p><code>pypdf</code> extracts digital text — it returns empty strings for scanned PDFs (images of text).</p>
+        <p><strong>Solution:</strong> OCR fallback. If <code>extract_text()</code> returns empty or near-empty text, convert the PDF pages to images and run <code>pytesseract</code> (wraps Tesseract OCR) or a cloud service (AWS Textract, Google Document AI). The <code>PDFParser</code> would need a fallback branch — a known limitation of the current implementation.</p>
+      </div>
+    </details>
+
+    <details>
+      <summary><span class="arrow">▶</span> What does DataQualityMetrics.calculate_quality_score compute?</summary>
+      <div class="details-body">
+        <p><code>quality_score = (valid_records / total_records) × 100</code></p>
+        <p>The simplest possible quality metric — the percentage of records that passed all Pydantic schema validations. A score of 85% means 15% of uploaded resumes had validation errors (missing fields, malformed dates, invalid emails).</p>
+        <p>A more sophisticated metric would weight fields by importance — an invalid email is more critical than a missing LinkedIn URL.</p>
+      </div>
+    </details>
+  </div>
+
+  <!-- LIMITATIONS -->
+  <div class="card card-warm" id="limits">
+    <h2>Honest limitations</h2>
+    <div class="limitation-item">No vector store — similarity is O(N) per query. Above ~1,000 resumes, ANN search would be needed.</div>
+    <div class="limitation-item"><code>BiasMonitor</code> returns hardcoded placeholder values — real bias monitoring requires labelled demographic data.</div>
+    <div class="limitation-item"><code>DataQualityChecker.validate_schema_compliance</code> calls <code>.dict()</code> (Pydantic v1 method) — should be <code>.model_dump()</code> in Pydantic v2.</div>
+    <div class="limitation-item">No OCR fallback — scanned PDFs return empty text and fail silently.</div>
+    <div class="limitation-item"><code>feature_engineering.py</code> and <code>preprocess_data.py</code> at the project root are standalone scripts that don't integrate with the <code>src/</code> module structure.</div>
+    <div class="limitation-item">The FastAPI <code>main.py</code> is minimal — <code>src/api/schemas.py</code> defines models but the running API is not fully wired end-to-end in the current state.</div>
+  </div>
+
+</div>
+</body>
+</html>

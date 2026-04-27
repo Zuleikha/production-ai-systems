@@ -1,0 +1,279 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>MLOps Pipeline — Docs</title>
+  <link href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:ital,wght@0,400;0,700;1,400&display=swap" rel="stylesheet">
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: 'Atkinson Hyperlegible', 'Segoe UI', Arial, sans-serif;
+      background: #f7faf2; color: #2a2c1e; font-size: 1.12rem; line-height: 1.9;
+    }
+    .container { max-width: 780px; margin: 0 auto; padding: 36px 24px 80px; }
+    h1 { font-size: 1.9rem; color: #1a2a10; margin-bottom: 6px; }
+    h2 { font-size: 1.25rem; color: #1a2a10; margin-bottom: 14px; }
+    h3 { font-size: 1.05rem; color: #243a18; margin-bottom: 8px; }
+    p  { margin-bottom: 14px; }
+    ul, ol { margin: 6px 0 14px 24px; }
+    li { margin-bottom: 8px; }
+    .subtitle { color: #506040; font-size: 1rem; margin-bottom: 24px; }
+    .nav { display: flex; gap: 10px; flex-wrap: wrap; margin-bottom: 28px; }
+    .nav a {
+      background: #dff0d8; color: #2a5a18; padding: 7px 16px;
+      border-radius: 20px; text-decoration: none; font-size: 0.88rem; font-weight: 600;
+    }
+    .nav a:hover { background: #c8e4b8; }
+    .card { border-radius: 14px; padding: 26px 28px; margin-bottom: 18px; border-left: 5px solid; }
+    .card-blue   { background: #eef6fd; border-color: #5ba3d0; }
+    .card-green  { background: #eef8f0; border-color: #4daa60; }
+    .card-yellow { background: #fdf8ec; border-color: #c8980a; }
+    .card-purple { background: #f4effe; border-color: #8060cc; }
+    .card-warm   { background: #fff4e4; border-color: #c07820; }
+    table { width: 100%; border-collapse: collapse; margin: 10px 0 4px; font-size: 0.97rem; }
+    th { background: #d8eed0; color: #1a4010; padding: 10px 14px; text-align: left; }
+    td { padding: 10px 14px; border-bottom: 1px solid #d8e8d0; }
+    tr:last-child td { border-bottom: none; }
+    tr:nth-child(even) td { background: #f4fbf0; }
+    code {
+      background: #d8f0d0; color: #1a5010; padding: 2px 7px;
+      border-radius: 5px; font-family: 'Consolas', monospace; font-size: 0.9em;
+    }
+    pre {
+      background: #1a2010; color: #d8f0c8; padding: 18px 20px;
+      border-radius: 10px; overflow-x: auto; margin: 12px 0;
+      font-size: 0.92rem; line-height: 1.65; font-family: 'Consolas', monospace;
+    }
+    details { background: white; border-radius: 10px; border: 1px solid #c8e0c0; margin-bottom: 10px; }
+    summary {
+      padding: 15px 20px; cursor: pointer; font-weight: 700; color: #1a3a10;
+      list-style: none; display: flex; align-items: center; gap: 10px; user-select: none;
+    }
+    summary::-webkit-details-marker { display: none; }
+    summary .arrow { font-size: 0.8em; transition: transform 0.2s; }
+    details[open] summary .arrow { transform: rotate(90deg); }
+    .details-body { padding: 4px 20px 20px; border-top: 1px solid #d8ecd0; }
+    .tag {
+      display: inline-block; background: #d8f0d0; color: #1a5020;
+      padding: 3px 11px; border-radius: 20px; font-size: 0.82rem; font-weight: 600; margin: 2px;
+    }
+    .step { display: flex; gap: 14px; align-items: flex-start; margin-bottom: 14px; }
+    .step-num {
+      background: #4daa60; color: white; border-radius: 50%; width: 30px; height: 30px;
+      display: flex; align-items: center; justify-content: center;
+      font-weight: 700; font-size: 0.9rem; flex-shrink: 0; margin-top: 4px;
+    }
+    .limitation-item {
+      background: #fff8e6; border-left: 4px solid #d09020;
+      padding: 10px 14px; border-radius: 6px; margin-bottom: 8px;
+    }
+    .asset-step {
+      display: flex; gap: 12px; align-items: center; margin-bottom: 8px;
+      background: #f0faf0; padding: 10px 14px; border-radius: 8px;
+    }
+    .asset-num {
+      background: #2a7a40; color: white; border-radius: 4px;
+      padding: 2px 9px; font-size: 0.82rem; font-weight: 700; flex-shrink: 0;
+    }
+  </style>
+</head>
+<body>
+<div class="container">
+
+  <h1>MLOps Pipeline</h1>
+  <p class="subtitle">End-to-End Model Training &amp; Serving Platform — Dagster + BERT + MLflow</p>
+
+  <nav class="nav">
+    <a href="#what">What is this?</a>
+    <a href="#pipeline">Pipeline assets</a>
+    <a href="#tech">Tech stack</a>
+    <a href="#start">Quick start</a>
+    <a href="#api">API endpoints</a>
+    <a href="#qa">Interview Q&amp;A</a>
+    <a href="#limits">Limitations</a>
+  </nav>
+
+  <!-- WHAT -->
+  <div class="card card-green" id="what">
+    <h2>What is this?</h2>
+    <p>An end-to-end MLOps system that takes a raw dataset all the way to a deployed model serving API. The whole pipeline is orchestrated as <strong>Dagster assets</strong> — each stage is a named data artefact with declared dependencies.</p>
+    <p>Specifically: it fine-tunes <strong>BERT</strong> on the IMDB sentiment dataset, tracks every experiment in <strong>MLflow</strong>, and serves predictions through a <strong>FastAPI</strong> endpoint. You can trigger a full retrain via the API, or re-run any single stage from the Dagster UI without touching the others.</p>
+    <p>The point of this project is to demonstrate the full MLOps lifecycle — not just training, but orchestration, experiment tracking, model registry, and deployment as a connected system.</p>
+  </div>
+
+  <!-- PIPELINE ASSETS -->
+  <div class="card card-blue" id="pipeline">
+    <h2>Pipeline assets — 9 stages in order</h2>
+    <div class="asset-step"><div class="asset-num">1</div><div><strong>pipeline_config</strong> — loads and validates <code>config/pipeline.yaml</code></div></div>
+    <div class="asset-step"><div class="asset-num">2</div><div><strong>dataset_info</strong> — resolves dataset name, split sizes, label names from HuggingFace</div></div>
+    <div class="asset-step"><div class="asset-num">3</div><div><strong>raw_dataset</strong> — downloads IMDB (25k train, 25k test) from HuggingFace Hub</div></div>
+    <div class="asset-step"><div class="asset-num">4</div><div><strong>validated_dataset</strong> — pandas assertions: no nulls, correct columns, text length bounds</div></div>
+    <div class="asset-step"><div class="asset-num">5</div><div><strong>preprocessed_dataset</strong> — tokenises with <code>bert-base-uncased</code>, encodes labels</div></div>
+    <div class="asset-step"><div class="asset-num">6</div><div><strong>trained_model</strong> — fine-tunes BERT with HuggingFace <code>Trainer</code>, logs to MLflow</div></div>
+    <div class="asset-step"><div class="asset-num">7</div><div><strong>evaluated_model</strong> — accuracy, F1, confusion matrix on the test set</div></div>
+    <div class="asset-step"><div class="asset-num">8</div><div><strong>model_registry</strong> — saves artefacts and metadata to MLflow model registry</div></div>
+    <div class="asset-step"><div class="asset-num">9</div><div><strong>deployment_config</strong> — writes serving config for the FastAPI layer</div></div>
+    <p style="margin-top:14px; color:#506040; font-size:0.95rem;">You can re-materialise any single asset (e.g. just <code>trained_model</code>) without re-running the full DAG. Dagster handles dependency ordering automatically.</p>
+  </div>
+
+  <!-- TECH -->
+  <div class="card card-yellow" id="tech">
+    <h2>Tech stack</h2>
+    <table>
+      <tr><th>Component</th><th>Tool</th></tr>
+      <tr><td>Orchestration</td><td>Dagster <code>@asset</code> + <code>Definitions</code></td></tr>
+      <tr><td>Training</td><td>HuggingFace Transformers <code>Trainer</code></td></tr>
+      <tr><td>Model</td><td>BERT (<code>bert-base-uncased</code>)</td></tr>
+      <tr><td>Dataset</td><td>IMDB sentiment via HuggingFace Hub</td></tr>
+      <tr><td>Experiment tracking</td><td>MLflow (self-hosted, no API key)</td></tr>
+      <tr><td>Serving</td><td>FastAPI + Uvicorn</td></tr>
+      <tr><td>Monitoring</td><td>Evidently, Prometheus</td></tr>
+      <tr><td>Config</td><td><code>pydantic-settings</code> + YAML</td></tr>
+    </table>
+    <p style="margin-top:14px;">
+      <span class="tag">Python</span>
+      <span class="tag">Dagster</span>
+      <span class="tag">BERT</span>
+      <span class="tag">HuggingFace</span>
+      <span class="tag">MLflow</span>
+      <span class="tag">FastAPI</span>
+      <span class="tag">Pydantic v2</span>
+      <span class="tag">Docker</span>
+    </p>
+  </div>
+
+  <!-- QUICK START -->
+  <div class="card card-green" id="start">
+    <h2>Quick start</h2>
+    <pre>pip install -r requirements.txt
+cp .env.example .env   # set MLFLOW_TRACKING_URI=./mlruns</pre>
+    <p><strong>Start Dagster UI:</strong></p>
+    <pre>dagster dev -f src/dagster_definitions.py
+# open http://localhost:3000 → click Materialize All</pre>
+    <p><strong>View MLflow experiments:</strong></p>
+    <pre>mlflow ui
+# open http://localhost:5000</pre>
+    <p><strong>Start serving API:</strong></p>
+    <pre>uvicorn src.api:app --reload
+# open http://localhost:8000/docs</pre>
+  </div>
+
+  <!-- API -->
+  <div class="card card-blue" id="api">
+    <h2>API endpoints</h2>
+    <table>
+      <tr><th>Method</th><th>Path</th><th>What it does</th></tr>
+      <tr><td><code>GET</code></td><td><code>/health</code></td><td>Liveness check + model load status</td></tr>
+      <tr><td><code>POST</code></td><td><code>/predict</code></td><td>Sentiment prediction — returns label + confidence score</td></tr>
+      <tr><td><code>POST</code></td><td><code>/train</code></td><td>Triggers the full Dagster pipeline (long-running)</td></tr>
+    </table>
+    <p style="margin-top:12px;"><strong>Example prediction:</strong></p>
+    <pre>curl -X POST http://localhost:8000/predict \
+  -H "Content-Type: application/json" \
+  -d '{"text": "This film was absolutely brilliant."}'</pre>
+    <p>Returns: <code>{"label": "positive", "score": 0.98, "model_version": "1"}</code></p>
+  </div>
+
+  <!-- Q&A -->
+  <div class="card card-purple" id="qa">
+    <h2>Interview Q&amp;A</h2>
+    <p style="margin-bottom:16px; color:#5e50a0; font-size:0.95rem;">Click any question to read the answer.</p>
+
+    <details>
+      <summary><span class="arrow">▶</span> What is the Dagster asset model and why is it better for ML than Airflow?</summary>
+      <div class="details-body">
+        <p>In Dagster, you declare <em>what data artefacts exist</em> and <em>how to produce them</em> — not which tasks run in which order. Each <code>@asset</code> is a named artefact (e.g. <code>trained_model</code>) with declared upstream dependencies. The scheduler materialises them in topological order.</p>
+        <p><strong>Benefits:</strong></p>
+        <ul>
+          <li><strong>Partial re-runs</strong> — re-materialise just <code>trained_model</code> without re-downloading the dataset.</li>
+          <li><strong>Built-in lineage</strong> — Dagster knows which data produced which model.</li>
+          <li><strong>Independently testable</strong> — each asset can be unit-tested without the full pipeline.</li>
+        </ul>
+        <p>Airflow defines task execution order — there's no concept of "the trained model" as a first-class object. Re-runs and partial backfills are much harder.</p>
+      </div>
+    </details>
+
+    <details>
+      <summary><span class="arrow">▶</span> Why MLflow instead of Weights &amp; Biases?</summary>
+      <div class="details-body">
+        <p>MLflow is <strong>fully self-hosted</strong> — no external service, no API key, no data leaving the machine. For a portfolio project it eliminates setup friction. MLflow handles parameter logging, metric curves, artefact storage, and a model registry. The original code used both wandb AND mlflow redundantly — that was removed.</p>
+        <p>W&amp;B is excellent in team environments where you want shared dashboards and collaboration. MLflow is better when you need full local control.</p>
+      </div>
+    </details>
+
+    <details>
+      <summary><span class="arrow">▶</span> Why use HuggingFace Trainer instead of a custom training loop?</summary>
+      <div class="details-body">
+        <p><code>Trainer</code> handles gradient accumulation, mixed-precision, evaluation callbacks, checkpoint saving, and best-model selection — all with battle-tested defaults. A custom loop duplicates this with worse defaults and no community maintenance.</p>
+        <p>Use a custom loop when you need unusual loss functions, custom schedulers, or multiple optimisers (e.g. GANs). For fine-tuning a standard BERT model, <code>Trainer</code> is the right tool.</p>
+        <p>This project kept a custom PyTorch loop in <code>_train_custom_model</code> to demonstrate the pattern — but the primary path uses <code>Trainer</code>.</p>
+      </div>
+    </details>
+
+    <details>
+      <summary><span class="arrow">▶</span> How does MLflow experiment tracking work here?</summary>
+      <div class="details-body">
+        <p>Each <code>mlflow.start_run()</code> opens a run context. The pipeline logs:</p>
+        <ul>
+          <li><strong>Parameters</strong> — model name, batch size, learning rate, epochs via <code>mlflow.log_params</code></li>
+          <li><strong>Metrics</strong> — train/val loss per epoch via <code>mlflow.log_metrics(step=epoch)</code></li>
+          <li><strong>Artefacts</strong> — model weights, tokenizer config via <code>mlflow.log_artifacts</code></li>
+        </ul>
+        <p>The MLflow UI at <code>localhost:5000</code> shows all runs, lets you compare loss curves, and download artefacts. The model registry versions and stages models (staging vs. production).</p>
+      </div>
+    </details>
+
+    <details>
+      <summary><span class="arrow">▶</span> How would you scale this to 10x more data?</summary>
+      <div class="details-body">
+        <ul>
+          <li><strong>Data</strong> — use <code>streaming=True</code> in <code>load_dataset</code> to avoid loading everything into RAM. Process in chunks.</li>
+          <li><strong>Training</strong> — enable <code>fp16=True</code> in <code>TrainingArguments</code> for ~2x throughput. Use gradient accumulation to simulate larger batches without more memory.</li>
+          <li><strong>Orchestration</strong> — Dagster supports partitioned assets. Partition by date or data shard and materialise partitions in parallel.</li>
+        </ul>
+      </div>
+    </details>
+
+    <details>
+      <summary><span class="arrow">▶</span> Is the /train endpoint safe for concurrent requests?</summary>
+      <div class="details-body">
+        <p>No — it's a race condition. If two <code>/train</code> requests run concurrently, they will both try to write <code>pipeline.yaml</code> at the same time, corrupting the config.</p>
+        <p>In production, you'd queue training jobs (via Dagster's run queue or a message queue like Redis Queue) rather than triggering them synchronously via HTTP. The direct mutation is a deliberate simplification for local demo purposes.</p>
+      </div>
+    </details>
+
+    <details>
+      <summary><span class="arrow">▶</span> What monitoring would you add in production?</summary>
+      <div class="details-body">
+        <p>Three layers:</p>
+        <ul>
+          <li><strong>Infrastructure</strong> — Prometheus scraping request latency, error rate, and throughput. Already wired with <code>prometheus-client</code>.</li>
+          <li><strong>Data drift</strong> — Evidently monitoring input text distributions vs. the training distribution. Alert when drift exceeds a threshold.</li>
+          <li><strong>Model performance</strong> — periodically sample predictions, label them, recompute accuracy/F1. Trigger retraining if metrics degrade below a threshold.</li>
+        </ul>
+      </div>
+    </details>
+
+    <details>
+      <summary><span class="arrow">▶</span> How would you add A/B testing for two model versions?</summary>
+      <div class="details-body">
+        <p>Route traffic at the API layer: maintain two <code>ModelService</code> instances (v1 and v2), randomly assign each request based on a configured split (e.g. 90/10), log which version served each request, then compare metrics in MLflow or Grafana.</p>
+        <p>MLflow's model registry supports staging (staging vs. production) — promote v2 to production when its metrics exceed v1's. This maps cleanly to the A/B testing workflow.</p>
+      </div>
+    </details>
+  </div>
+
+  <!-- LIMITATIONS -->
+  <div class="card card-warm" id="limits">
+    <h2>Honest limitations</h2>
+    <div class="limitation-item">The <code>/train</code> endpoint is synchronous and not idempotent — concurrent calls will corrupt <code>pipeline.yaml</code>. Production fix: use a job queue.</div>
+    <div class="limitation-item">Model checkpoint paths are relative — the API will fail to load if started from a different working directory.</div>
+    <div class="limitation-item">Grid search is exhaustive — for large hyperparameter grids, Bayesian optimisation (Optuna) would be significantly faster.</div>
+    <div class="limitation-item">The <code>DataManager</code> class in <code>data_processor.py</code> is partially unused — designed for a custom model path that was later superseded by the Dagster asset pipeline.</div>
+    <div class="limitation-item">Two separate API files (<code>src/api.py</code> and <code>src/deployment/api.py</code>) — in a real project these would be merged.</div>
+  </div>
+
+</div>
+</body>
+</html>

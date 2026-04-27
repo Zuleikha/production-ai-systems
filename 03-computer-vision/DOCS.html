@@ -1,0 +1,279 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Computer Vision — Docs</title>
+  <link href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:ital,wght@0,400;0,700;1,400&display=swap" rel="stylesheet">
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: 'Atkinson Hyperlegible', 'Segoe UI', Arial, sans-serif;
+      background: #f7f4fa; color: #2a2035; font-size: 1.12rem; line-height: 1.9;
+    }
+    .container { max-width: 780px; margin: 0 auto; padding: 36px 24px 80px; }
+    h1 { font-size: 1.9rem; color: #1a1040; margin-bottom: 6px; }
+    h2 { font-size: 1.25rem; color: #1a1040; margin-bottom: 14px; }
+    h3 { font-size: 1.05rem; color: #2a1860; margin-bottom: 8px; }
+    p  { margin-bottom: 14px; }
+    ul, ol { margin: 6px 0 14px 24px; }
+    li { margin-bottom: 8px; }
+    .subtitle { color: #504070; font-size: 1rem; margin-bottom: 24px; }
+    .nav { display: flex; gap: 10px; flex-wrap: wrap; margin-bottom: 28px; }
+    .nav a {
+      background: #e8d8f8; color: #4a1090; padding: 7px 16px;
+      border-radius: 20px; text-decoration: none; font-size: 0.88rem; font-weight: 600;
+    }
+    .nav a:hover { background: #d8c0f0; }
+    .card { border-radius: 14px; padding: 26px 28px; margin-bottom: 18px; border-left: 5px solid; }
+    .card-blue   { background: #eef4fd; border-color: #5080d0; }
+    .card-green  { background: #eef8f0; border-color: #4daa60; }
+    .card-yellow { background: #fdf8ec; border-color: #c8980a; }
+    .card-purple { background: #f0eafe; border-color: #7050c0; }
+    .card-warm   { background: #fff4e4; border-color: #c07820; }
+    table { width: 100%; border-collapse: collapse; margin: 10px 0 4px; font-size: 0.97rem; }
+    th { background: #e0d0f8; color: #2a1060; padding: 10px 14px; text-align: left; }
+    td { padding: 10px 14px; border-bottom: 1px solid #e0d8f0; }
+    tr:last-child td { border-bottom: none; }
+    tr:nth-child(even) td { background: #f8f4ff; }
+    code {
+      background: #e8d8f8; color: #4a0890; padding: 2px 7px;
+      border-radius: 5px; font-family: 'Consolas', monospace; font-size: 0.9em;
+    }
+    pre {
+      background: #18101e; color: #e8d8f8; padding: 18px 20px;
+      border-radius: 10px; overflow-x: auto; margin: 12px 0;
+      font-size: 0.92rem; line-height: 1.65; font-family: 'Consolas', monospace;
+    }
+    details { background: white; border-radius: 10px; border: 1px solid #d8c8f0; margin-bottom: 10px; }
+    summary {
+      padding: 15px 20px; cursor: pointer; font-weight: 700; color: #2a1060;
+      list-style: none; display: flex; align-items: center; gap: 10px; user-select: none;
+    }
+    summary::-webkit-details-marker { display: none; }
+    summary .arrow { font-size: 0.8em; transition: transform 0.2s; }
+    details[open] summary .arrow { transform: rotate(90deg); }
+    .details-body { padding: 4px 20px 20px; border-top: 1px solid #e0d0f8; }
+    .tag {
+      display: inline-block; background: #e8d8f8; color: #4a0890;
+      padding: 3px 11px; border-radius: 20px; font-size: 0.82rem; font-weight: 600; margin: 2px;
+    }
+    .step { display: flex; gap: 14px; align-items: flex-start; margin-bottom: 14px; }
+    .step-num {
+      background: #7050c0; color: white; border-radius: 50%; width: 30px; height: 30px;
+      display: flex; align-items: center; justify-content: center;
+      font-weight: 700; font-size: 0.9rem; flex-shrink: 0; margin-top: 4px;
+    }
+    .limitation-item {
+      background: #fff8e6; border-left: 4px solid #d09020;
+      padding: 10px 14px; border-radius: 6px; margin-bottom: 8px;
+    }
+    .arch-stage {
+      background: #f4f0fd; border: 1px solid #c8b8f0;
+      padding: 10px 16px; border-radius: 8px; margin-bottom: 6px;
+      display: flex; align-items: center; gap: 12px;
+    }
+    .arch-arrow { color: #8060c0; font-size: 1.2rem; margin: 0 auto; display: block; text-align: center; }
+  </style>
+</head>
+<body>
+<div class="container">
+
+  <h1>Image Intelligence API</h1>
+  <p class="subtitle">Real-Time Object Detection — Faster R-CNN ResNet-50 FPN</p>
+
+  <nav class="nav">
+    <a href="#what">What is this?</a>
+    <a href="#how">How it works</a>
+    <a href="#tech">Tech stack</a>
+    <a href="#start">Quick start</a>
+    <a href="#api">API endpoints</a>
+    <a href="#qa">Interview Q&amp;A</a>
+    <a href="#limits">Limitations</a>
+  </nav>
+
+  <!-- WHAT -->
+  <div class="card card-purple" id="what">
+    <h2>What is this?</h2>
+    <p>A production object detection service. You upload an image, and the API returns <strong>bounding boxes</strong>, <strong>class labels</strong>, and <strong>confidence scores</strong> for every object it finds — 80+ object categories from the COCO dataset.</p>
+    <p>The model is <strong>Faster R-CNN with a ResNet-50 FPN backbone</strong> — a two-stage detector that first proposes candidate regions, then classifies each one. More accurate than single-stage detectors like YOLO, with well-understood architecture decisions worth explaining in interviews.</p>
+    <p>Ships with a static HTML drag-and-drop frontend for live demos.</p>
+  </div>
+
+  <!-- HOW IT WORKS -->
+  <div class="card card-blue" id="how">
+    <h2>How it works — step by step</h2>
+
+    <div class="step"><div class="step-num">1</div><div><strong>Upload</strong> — image sent as multipart form data to <code>POST /detect</code></div></div>
+    <div class="step"><div class="step-num">2</div><div><strong>Decode</strong> — <code>cv2.imdecode</code> on raw bytes (faster than writing to temp file and opening with PIL)</div></div>
+    <div class="step"><div class="step-num">3</div><div><strong>Preprocess</strong> — BGR → RGB → <code>transforms.ToTensor()</code> normalises to float32 [0, 1]</div></div>
+    <div class="step"><div class="step-num">4</div><div><strong>Inference</strong> — <code>torch.no_grad()</code> forward pass through Faster R-CNN: backbone → RPN → RoI Align → classification head</div></div>
+    <div class="step"><div class="step-num">5</div><div><strong>Confidence filter</strong> — discard any box with score below threshold (default 0.5)</div></div>
+    <div class="step"><div class="step-num">6</div><div><strong>NMS</strong> — <code>torchvision.ops.nms</code> removes overlapping boxes for the same class (IoU threshold 0.2)</div></div>
+    <div class="step"><div class="step-num">7</div><div><strong>Return</strong> — JSON: bounding boxes <code>[x1, y1, x2, y2]</code>, class names, scores, inference time</div></div>
+
+    <h3 style="margin-top:18px;">Faster R-CNN — two stages</h3>
+    <div class="arch-stage"><strong>Stage 1 — RPN:</strong>&nbsp; ResNet-50 FPN backbone generates feature maps. Region Proposal Network slides over them and proposes ~2,000 candidate boxes with objectness scores.</div>
+    <div class="arch-arrow">↓</div>
+    <div class="arch-stage"><strong>Stage 2 — Detection head:</strong>&nbsp; For each proposal, RoI Align crops and resizes the feature map. A fully connected head predicts class probabilities (91 COCO classes) and bounding box refinements.</div>
+    <p style="margin-top:12px; color:#504070; font-size:0.95rem;">Both stages share the backbone — they run in a single forward pass.</p>
+  </div>
+
+  <!-- TECH -->
+  <div class="card card-yellow" id="tech">
+    <h2>Tech stack</h2>
+    <table>
+      <tr><th>Component</th><th>Tool</th></tr>
+      <tr><td>Detection model</td><td>Faster R-CNN ResNet-50 FPN (COCO pretrained)</td></tr>
+      <tr><td>DL framework</td><td>PyTorch + Torchvision</td></tr>
+      <tr><td>Image processing</td><td>OpenCV, Pillow</td></tr>
+      <tr><td>API</td><td>FastAPI + async lifespan</td></tr>
+      <tr><td>Visualisation</td><td>Matplotlib, OpenCV drawing</td></tr>
+    </table>
+    <p style="margin-top:14px;">
+      <span class="tag">Python</span>
+      <span class="tag">PyTorch</span>
+      <span class="tag">Faster R-CNN</span>
+      <span class="tag">Torchvision</span>
+      <span class="tag">OpenCV</span>
+      <span class="tag">FastAPI</span>
+      <span class="tag">Docker</span>
+    </p>
+  </div>
+
+  <!-- QUICK START -->
+  <div class="card card-green" id="start">
+    <h2>Quick start</h2>
+    <pre>pip install -r requirements.txt
+
+# Downloads COCO pretrained weights (~167MB) on first run
+uvicorn src.api.main:app --reload</pre>
+    <p>Open the frontend: <code>src/frontend/app.html</code></p>
+    <p>Swagger docs: <code>http://localhost:8000/docs</code></p>
+    <p><strong>Example detection call:</strong></p>
+    <pre>curl -X POST http://localhost:8000/detect \
+  -F "file=@photo.jpg" \
+  -F "confidence_threshold=0.6"</pre>
+    <p><strong>Response:</strong></p>
+    <pre>{
+  "detections": [
+    { "class": "person", "score": 0.97, "box": [120, 45, 380, 510] },
+    { "class": "car",    "score": 0.89, "box": [400, 200, 720, 420] }
+  ],
+  "inference_ms": 3240,
+  "device": "cpu"
+}</pre>
+  </div>
+
+  <!-- API -->
+  <div class="card card-blue" id="api">
+    <h2>API endpoints</h2>
+    <table>
+      <tr><th>Method</th><th>Path</th><th>What it does</th></tr>
+      <tr><td><code>GET</code></td><td><code>/health</code></td><td>Liveness check + model load status</td></tr>
+      <tr><td><code>POST</code></td><td><code>/detect</code></td><td>Detect objects in an uploaded image</td></tr>
+      <tr><td><code>GET</code></td><td><code>/stats</code></td><td>Request count, uptime, device (CPU/GPU)</td></tr>
+    </table>
+    <p style="margin-top:12px; color:#504070; font-size:0.95rem;"><code>/detect</code> accepts <code>multipart/form-data</code> with an image file and optional <code>confidence_threshold</code> query param (default 0.5).</p>
+  </div>
+
+  <!-- Q&A -->
+  <div class="card card-purple" id="qa">
+    <h2>Interview Q&amp;A</h2>
+    <p style="margin-bottom:16px; color:#604090; font-size:0.95rem;">Click any question to read the answer.</p>
+
+    <details>
+      <summary><span class="arrow">▶</span> Explain Faster R-CNN. What are the two stages?</summary>
+      <div class="details-body">
+        <p><strong>Stage 1 — Region Proposal Network (RPN):</strong> a small convolutional network slides over the ResNet-50 feature map and proposes ~2,000 candidate bounding boxes ("anchors") along with objectness scores (object vs. background).</p>
+        <p><strong>Stage 2 — Detection head:</strong> for each proposal, RoI Align crops and resizes the feature map to a fixed size. A fully connected head then predicts class probabilities (91 COCO classes) and bounding box refinements. The classification and box regression run in parallel.</p>
+        <p>Both stages share the backbone — they run in a single forward pass. The "Faster" in the name refers to the fact that the RPN replaced the external selective search used in earlier R-CNN variants, making the system end-to-end trainable.</p>
+      </div>
+    </details>
+
+    <details>
+      <summary><span class="arrow">▶</span> What is Non-Maximum Suppression (NMS) and why is it needed?</summary>
+      <div class="details-body">
+        <p>NMS removes redundant overlapping detections of the same object. After the RPN generates thousands of proposals, many overlap significantly (multiple anchors fire on the same car, for example).</p>
+        <p><strong>How it works:</strong> sort boxes by score → keep the highest-scoring box → remove any other box with IoU > threshold → repeat. <strong>IoU = area of overlap / area of union.</strong></p>
+        <p>This project uses <code>torchvision.ops.nms</code> with threshold 0.2. Lower threshold = more aggressive suppression = cleaner results for the demo. In production this would be tuned per class.</p>
+      </div>
+    </details>
+
+    <details>
+      <summary><span class="arrow">▶</span> What is FPN (Feature Pyramid Network)?</summary>
+      <div class="details-body">
+        <p>FPN adds a top-down pathway to the ResNet backbone. ResNet produces feature maps at multiple scales (stride 4, 8, 16, 32). FPN merges these with lateral connections, producing multi-scale feature maps that combine:</p>
+        <ul>
+          <li><strong>High-resolution spatial detail</strong> from shallow layers (for detecting small objects)</li>
+          <li><strong>Semantic richness</strong> from deep layers (for understanding what the object is)</li>
+        </ul>
+        <p>Without FPN, a detector struggles to find both small objects (need high-res features) and large objects (need abstract features) in the same image. FPN solves this with minimal additional computation.</p>
+      </div>
+    </details>
+
+    <details>
+      <summary><span class="arrow">▶</span> Why Faster R-CNN over YOLO?</summary>
+      <div class="details-body">
+        <p>Faster R-CNN is a two-stage detector: more accurate, slower (~3–5s CPU). YOLO is single-stage: faster (~100ms), slightly less accurate at detecting small objects.</p>
+        <p>For a portfolio project demonstrating detection architecture, the two-stage design is more interesting to explain. The original codebase had a skeleton <code>YOLODetector</code> class (print statements only) — it was deleted. A production deployment prioritising real-time would use YOLOv8.</p>
+      </div>
+    </details>
+
+    <details>
+      <summary><span class="arrow">▶</span> What is the difference between confidence threshold and NMS threshold?</summary>
+      <div class="details-body">
+        <p><strong>Confidence threshold</strong> — filters detections where the model is uncertain. Any box with score &lt; threshold is discarded. Lower threshold = higher recall (fewer misses), more false positives.</p>
+        <p><strong>NMS threshold</strong> — controls suppression of overlapping boxes for the same class. If two boxes predicting "person" overlap by more than the IoU threshold, the lower-scoring one is removed. Lower NMS threshold = more aggressive suppression = one box per object even in dense crowds.</p>
+      </div>
+    </details>
+
+    <details>
+      <summary><span class="arrow">▶</span> How would you evaluate this quantitatively?</summary>
+      <div class="details-body">
+        <p>Standard metric: <strong>mAP (mean Average Precision)</strong>.</p>
+        <ul>
+          <li>For each class, sweep the confidence threshold and plot the Precision-Recall curve.</li>
+          <li><strong>AP</strong> = area under that curve for one class.</li>
+          <li><strong>mAP</strong> = average AP across all classes.</li>
+          <li><strong>COCO mAP@[0.5:0.95]</strong> averages across multiple IoU thresholds (0.5, 0.55, ..., 0.95) — more rigorous than single-threshold AP.</li>
+        </ul>
+        <p>The <code>pycocotools</code> library handles this officially. For real-time systems also track FPS, p95 latency, and peak memory usage.</p>
+      </div>
+    </details>
+
+    <details>
+      <summary><span class="arrow">▶</span> How would you handle concurrent requests?</summary>
+      <div class="details-body">
+        <p>FastAPI is async but <code>torch.no_grad()</code> inference is synchronous (CPU-bound). Under concurrent load, requests queue behind each other's inference calls.</p>
+        <p><strong>Solutions:</strong></p>
+        <ul>
+          <li>Run inference in a thread pool: <code>await asyncio.get_event_loop().run_in_executor(None, detect_fn, image)</code></li>
+          <li>Batch requests: collect N images, run one batched forward pass</li>
+          <li>Multiple worker processes behind a load balancer (N × uvicorn workers or gunicorn)</li>
+        </ul>
+      </div>
+    </details>
+
+    <details>
+      <summary><span class="arrow">▶</span> Why not ONNX for serving?</summary>
+      <div class="details-body">
+        <p>ONNX + ONNX Runtime would give ~2x faster CPU inference and simpler deployment (no PyTorch in production). For this portfolio demo, 3–5s latency is acceptable and PyTorch is simpler to set up.</p>
+        <p>Production pipeline: train in PyTorch → <code>torch.onnx.export()</code> → validate with <code>onnxruntime</code> → serve via ONNX Runtime or TensorRT.</p>
+      </div>
+    </details>
+  </div>
+
+  <!-- LIMITATIONS -->
+  <div class="card card-warm" id="limits">
+    <h2>Honest limitations</h2>
+    <div class="limitation-item">Inference is synchronous and CPU-bound (~3–5s per image). Blocks the event loop under concurrent load. Fix: <code>run_in_executor</code>.</div>
+    <div class="limitation-item">COCO weights (~167MB) are downloaded on first startup. Should be pre-downloaded in Dockerfile for faster cold starts.</div>
+    <div class="limitation-item">NMS is applied globally. Per-class NMS gives better results for overlapping instances of different classes.</div>
+    <div class="limitation-item">No batching — processes one image per request.</div>
+    <div class="limitation-item">The <code>visualization.py</code> module (MetricsVisualizer, VideoVisualizer) is not wired to any API endpoint — available as a utility but not exposed.</div>
+  </div>
+
+</div>
+</body>
+</html>
