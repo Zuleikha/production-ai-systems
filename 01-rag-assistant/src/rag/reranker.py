@@ -27,12 +27,21 @@ logger = logging.getLogger(__name__)
 
 _MODEL_NAME = "cross-encoder/ms-marco-MiniLM-L-6-v2"
 
+try:
+    logger.info("Loading cross-encoder model: %s", _MODEL_NAME)
+    _cross_encoder: CrossEncoder | None = CrossEncoder(_MODEL_NAME)
+    logger.info("Reranker ready")
+except Exception:
+    logger.warning(
+        "Failed to load cross-encoder model %s; reranker will fall back to embedding scores",
+        _MODEL_NAME,
+    )
+    _cross_encoder = None
+
 
 class CrossEncoderReranker:
     def __init__(self) -> None:
-        logger.info("Loading cross-encoder model: %s", _MODEL_NAME)
-        self._model = CrossEncoder(_MODEL_NAME)
-        logger.info("Reranker ready")
+        self._model = _cross_encoder
 
     def rerank(
         self,
@@ -42,6 +51,9 @@ class CrossEncoderReranker:
     ) -> list[RetrievedDocument]:
         if not candidates:
             return []
+
+        if self._model is None:
+            return sorted(candidates, key=lambda d: d.score, reverse=True)[:top_k]
 
         pairs = [(query, doc.content) for doc in candidates]
         scores: list[float] = self._model.predict(pairs).tolist()
