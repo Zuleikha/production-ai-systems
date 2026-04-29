@@ -50,7 +50,7 @@ def mock_pipeline():
         mock_retriever.retrieve = AsyncMock(return_value=[dummy_doc])
 
         mock_reranker = MockReranker.return_value
-        mock_reranker.rerank = MagicMock(return_value=[dummy_doc])
+        mock_reranker.rerank = AsyncMock(return_value=[dummy_doc])
 
         mock_generator = MockGenerator.return_value
         mock_generator.generate = AsyncMock(return_value=dummy_generation)

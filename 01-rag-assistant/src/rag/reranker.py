@@ -57,7 +57,7 @@ class CohereReranker:
     def __init__(self) -> None:
         self._api_key = settings.cohere_api_key
 
-    def rerank(
+    async def rerank(
         self,
         query: str,
         candidates: list[RetrievedDocument],
@@ -70,22 +70,22 @@ class CohereReranker:
             return sorted(candidates, key=lambda d: d.score, reverse=True)[:top_k]
 
         try:
-            response = httpx.post(
-                _RERANK_URL,
-                headers={
-                    "Authorization": f"Bearer {self._api_key}",
-                    "Content-Type": "application/json",
-                },
-                json={
-                    "model": _RERANK_MODEL,
-                    "query": query,
-                    "documents": [doc.content for doc in candidates],
-                    "top_n": top_k,
-                },
-                timeout=10.0,
-            )
-            response.raise_for_status()
-            results = response.json()["results"]
+            async with httpx.AsyncClient(timeout=10.0) as client:
+                response = await client.post(
+                    _RERANK_URL,
+                    headers={
+                        "Authorization": f"Bearer {self._api_key}",
+                        "Content-Type": "application/json",
+                    },
+                    json={
+                        "model": _RERANK_MODEL,
+                        "query": query,
+                        "documents": [doc.content for doc in candidates],
+                        "top_n": top_k,
+                    },
+                )
+                response.raise_for_status()
+                results = response.json()["results"]
             return [
                 RetrievedDocument(
                     content=candidates[r["index"]].content,

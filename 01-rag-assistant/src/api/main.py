@@ -17,9 +17,9 @@ import logging
 import time
 from contextlib import asynccontextmanager
 from pathlib import Path
-from typing import Optional
+from typing import Annotated, Optional
 
-from fastapi import FastAPI, HTTPException, Request, UploadFile, File
+from fastapi import FastAPI, File, HTTPException, Request, UploadFile
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel, Field
 
@@ -124,12 +124,16 @@ class UploadResponse(BaseModel):
 
 @app.get("/health")
 async def health():
+    try:
+        doc_count = pipeline.document_count if pipeline else 0
+    except Exception:
+        doc_count = -1
     return {
         "status": "ok",
         "version": settings.app_version,
         "embedding_model": settings.embedding_model,
         "llm_model": settings.llm_model,
-        "documents_indexed": pipeline.document_count if pipeline else 0,
+        "documents_indexed": doc_count,
     }
 
 
@@ -153,7 +157,9 @@ async def query(req: QueryRequest):
 
 
 @app.post("/ingest", response_model=list[UploadResponse])
-async def ingest_documents(files: list[UploadFile] = File(...)):
+async def ingest_documents(
+    files: Annotated[list[UploadFile], File(description="One or more .pdf, .txt, or .md files to ingest")],
+):
     if ingestor is None:
         raise HTTPException(503, "Pipeline not initialised")
 
@@ -193,7 +199,11 @@ async def ingest_documents(files: list[UploadFile] = File(...)):
 async def list_documents():
     if pipeline is None:
         raise HTTPException(503, "Pipeline not initialised")
-    docs = pipeline.store.get_all_documents()
+    try:
+        docs = pipeline.store.get_all_documents()
+    except Exception as exc:
+        logger.exception("Failed to fetch documents from store")
+        raise HTTPException(503, f"Store unavailable: {exc}") from exc
     counts: dict[str, int] = {}
     for doc in docs:
         source = doc["metadata"].get("source", "unknown")

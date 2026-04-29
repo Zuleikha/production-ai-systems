@@ -136,7 +136,7 @@ class RAGPipeline:
         retrieve_ms = (time.perf_counter() - t_r) * 1000
 
         t_rr = time.perf_counter()
-        reranked = self.reranker.rerank(question, candidates, top_k=rr_k)
+        reranked = await self.reranker.rerank(question, candidates, top_k=rr_k)
         rerank_ms = (time.perf_counter() - t_rr) * 1000
 
         history = self._history.get(conversation_id, [])
