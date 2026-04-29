@@ -21,6 +21,7 @@ from typing import Annotated, Optional
 
 from fastapi import FastAPI, File, HTTPException, Request, UploadFile
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.openapi.utils import get_openapi
 from pydantic import BaseModel, Field
 
 from config.settings import settings
@@ -77,6 +78,38 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+
+def _patched_openapi() -> dict:
+    """Return the OpenAPI schema with format:binary on UploadFile items.
+
+    FastAPI 0.115+ emits contentMediaType (OAS 3.1) for UploadFile, but
+    Swagger UI needs format:binary (OAS 3.0) to render file-picker buttons.
+    Without this patch the files field renders as a plain text-array input
+    and any content typed into it arrives on the server as garbled bytes.
+    """
+    if app.openapi_schema:
+        return app.openapi_schema
+    schema = get_openapi(
+        title=app.title,
+        version=app.version,
+        description=app.description,
+        routes=app.routes,
+    )
+    body = (
+        schema.get("components", {})
+        .get("schemas", {})
+        .get("Body_ingest_documents_ingest_post", {})
+    )
+    items = body.get("properties", {}).get("files", {}).get("items", {})
+    if items:
+        items.pop("contentMediaType", None)
+        items["format"] = "binary"
+    app.openapi_schema = schema
+    return schema
+
+
+app.openapi = _patched_openapi  # type: ignore[method-assign]
 
 
 @app.middleware("http")
