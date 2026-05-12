@@ -1,0 +1,8 @@
+fastapi==0.115.0
+uvicorn==0.30.6
+openai==1.51.0
+chromadb==0.5.15
+streamlit==1.39.0
+requests==2.32.3
+pydantic==2.9.2
+pydantic-settings==2.5.2
