@@ -1,6 +1,6 @@
 # AI Engineering Portfolio
 
-Four production-ready AI systems covering RAG, MLOps, computer vision, and NLP — each with a FastAPI serving layer, Docker deployment, and full modernisation to current tooling.
+Six production-ready AI systems covering RAG, MLOps, computer vision, NLP, pharma ML, and fraud detection — each with a FastAPI serving layer, Docker deployment, and full modernisation to current tooling.
 
 ## Projects
 
@@ -10,6 +10,8 @@ Four production-ready AI systems covering RAG, MLOps, computer vision, and NLP �
 | 02 | [MLOps Pipeline](./02-mlops-pipeline) | BERT fine-tuning on IMDB with asset-based orchestration and experiment tracking | Dagster, MLflow, HuggingFace Transformers, FastAPI |
 | 03 | [Computer Vision](./03-computer-vision) | Object detection with Faster R-CNN ResNet-50 FPN and configurable NMS post-processing | PyTorch, Torchvision, OpenCV, FastAPI |
 | 04 | [Resume Screening](./04-resume-screening) | Semantic candidate ranking with Pydantic v2 schema validation and bias monitoring | sentence-transformers, pypdf, FastAPI, Pydantic v2 |
+| 05 | [Pharma AI](./05-pharma-ai) | Bioactivity prediction and molecular property analysis for drug discovery workflows | RDKit, scikit-learn, FastAPI, Python |
+| 06 | [Fraud Detection](./06-fraud-detection) | Real-time fraud detection pipeline with a production API and model monitoring | scikit-learn, FastAPI, Docker, Render |
 
 ## Quick Start
 
