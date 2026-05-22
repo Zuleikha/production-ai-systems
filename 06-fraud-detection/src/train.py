@@ -3,16 +3,28 @@ Train the fraud detection model and serialise it to models/.
 
 Run: python src/train.py
 """
+import os
 import joblib
 import pandas as pd
+from dotenv import load_dotenv
 from sklearn.ensemble import RandomForestClassifier
 from sklearn.model_selection import train_test_split
 from sklearn.pipeline import Pipeline
 from sklearn.metrics import classification_report, roc_auc_score
 from imblearn.over_sampling import SMOTE
 from imblearn.pipeline import Pipeline as ImbPipeline
+import dagshub
+import mlflow
 
 from features import load_config, build_time_features, build_velocity_features, build_preprocessor
+
+load_dotenv()
+
+dagshub.init(
+    repo_owner=os.environ.get("DAGSHUB_REPO_OWNER", "Zuleikha"),
+    repo_name=os.environ.get("DAGSHUB_REPO_NAME", "fraud-detection-ML-project"),
+    mlflow=True,
+)
 
 
 def train(config_path: str = "config/config.yaml"):
