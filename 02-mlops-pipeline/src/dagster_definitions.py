@@ -236,7 +236,7 @@ def trained_model(
         args=training_args,
         train_dataset=train_dataset,
         eval_dataset=val_dataset,
-        tokenizer=tokenizer,
+        processing_class=tokenizer,
         data_collator=DataCollatorWithPadding(tokenizer=tokenizer),
         compute_metrics=compute_metrics,
     )
@@ -262,7 +262,26 @@ def trained_model(
     
     with open(f"{final_model_path}/training_summary.yaml", "w") as f:
         yaml.dump(training_summary, f)
-    
+
+    import json
+    docs_dir = Path("docs")
+    docs_dir.mkdir(exist_ok=True)
+    eval_results = {
+        "model": model_config["model_name"],
+        "dataset": "imdb",
+        "train_samples": training_datasets["train_size"],
+        "test_samples": training_datasets["val_size"],
+        "epochs": model_config["num_epochs"],
+        "accuracy": round(eval_result.get("eval_accuracy", 0), 4),
+        "f1_weighted": round(eval_result.get("eval_f1", 0), 4),
+        "precision_weighted": round(eval_result.get("eval_precision", 0), 4),
+        "recall_weighted": round(eval_result.get("eval_recall", 0), 4),
+        "eval_loss": round(eval_result.get("eval_loss", 0), 4),
+        "training_timestamp": timestamp,
+    }
+    with open("docs/eval_results.json", "w") as f:
+        json.dump(eval_results, f, indent=2)
+
     return training_summary
 
 all_assets = [

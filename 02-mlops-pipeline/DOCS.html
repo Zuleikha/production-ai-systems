@@ -31,6 +31,7 @@
     .card-yellow { background: #fdf8ec; border-color: #c8980a; }
     .card-purple { background: #f4effe; border-color: #8060cc; }
     .card-warm   { background: #fff4e4; border-color: #c07820; }
+    .card-teal   { background: #eafaf7; border-color: #2aaa8a; }
     table { width: 100%; border-collapse: collapse; margin: 10px 0 4px; font-size: 0.97rem; }
     th { background: #d8eed0; color: #1a4010; padding: 10px 14px; text-align: left; }
     td { padding: 10px 14px; border-bottom: 1px solid #d8e8d0; }
@@ -76,6 +77,11 @@
       background: #2a7a40; color: white; border-radius: 4px;
       padding: 2px 9px; font-size: 0.82rem; font-weight: 700; flex-shrink: 0;
     }
+    .metric-big { font-size: 2rem; font-weight: 700; color: #1a5020; }
+    .metric-label { font-size: 0.85rem; color: #506040; }
+    .metrics-row { display: flex; gap: 24px; flex-wrap: wrap; margin: 16px 0; }
+    .metric-box { background: #f0faf0; border-radius: 10px; padding: 14px 20px; text-align: center; min-width: 110px; }
+    .note { background: #fff8e0; border-left: 4px solid #c8980a; padding: 10px 14px; border-radius: 6px; font-size: 0.93rem; margin-top: 12px; }
   </style>
 </head>
 <body>
@@ -87,6 +93,7 @@
   <nav class="nav">
     <a href="#what">What is this?</a>
     <a href="#pipeline">Pipeline assets</a>
+    <a href="#results">Results</a>
     <a href="#tech">Tech stack</a>
     <a href="#start">Quick start</a>
     <a href="#api">API endpoints</a>
@@ -98,7 +105,7 @@
   <div class="card card-green" id="what">
     <h2>What is this?</h2>
     <p>An end-to-end MLOps system that takes a raw dataset all the way to a deployed model serving API. The whole pipeline is orchestrated as <strong>Dagster assets</strong> — each stage is a named data artefact with declared dependencies.</p>
-    <p>Specifically: it fine-tunes <strong>BERT</strong> on the IMDB sentiment dataset, tracks every experiment in <strong>MLflow</strong>, and serves predictions through a <strong>FastAPI</strong> endpoint. You can trigger a full retrain via the API, or re-run any single stage from the Dagster UI without touching the others.</p>
+    <p>Specifically: it fine-tunes <strong>BERT</strong> on the IMDB sentiment dataset, tracks every experiment in <strong>MLflow</strong>, and serves predictions through a <strong>FastAPI</strong> endpoint. You can trigger a full retrain via the API asynchronously (returns a <code>run_id</code> immediately), or re-run any single stage from the Dagster UI without touching the others.</p>
     <p>The point of this project is to demonstrate the full MLOps lifecycle — not just training, but orchestration, experiment tracking, model registry, and deployment as a connected system.</p>
   </div>
 
@@ -106,15 +113,40 @@
   <div class="card card-blue" id="pipeline">
     <h2>Pipeline assets — 9 stages in order</h2>
     <div class="asset-step"><div class="asset-num">1</div><div><strong>pipeline_config</strong> — loads and validates <code>config/pipeline.yaml</code></div></div>
-    <div class="asset-step"><div class="asset-num">2</div><div><strong>dataset_info</strong> — resolves dataset name, split sizes, label names from HuggingFace</div></div>
-    <div class="asset-step"><div class="asset-num">3</div><div><strong>raw_dataset</strong> — downloads IMDB (25k train, 25k test) from HuggingFace Hub</div></div>
-    <div class="asset-step"><div class="asset-num">4</div><div><strong>validated_dataset</strong> — pandas assertions: no nulls, correct columns, text length bounds</div></div>
-    <div class="asset-step"><div class="asset-num">5</div><div><strong>preprocessed_dataset</strong> — tokenises with <code>bert-base-uncased</code>, encodes labels</div></div>
-    <div class="asset-step"><div class="asset-num">6</div><div><strong>trained_model</strong> — fine-tunes BERT with HuggingFace <code>Trainer</code>, logs to MLflow</div></div>
-    <div class="asset-step"><div class="asset-num">7</div><div><strong>evaluated_model</strong> — accuracy, F1, confusion matrix on the test set</div></div>
-    <div class="asset-step"><div class="asset-num">8</div><div><strong>model_registry</strong> — saves artefacts and metadata to MLflow model registry</div></div>
-    <div class="asset-step"><div class="asset-num">9</div><div><strong>deployment_config</strong> — writes serving config for the FastAPI layer</div></div>
+    <div class="asset-step"><div class="asset-num">2</div><div><strong>dataset_info</strong> — resolves dataset name, sample size, and column names</div></div>
+    <div class="asset-step"><div class="asset-num">3</div><div><strong>raw_dataset</strong> — downloads IMDB from HuggingFace Hub (cached); saves train/test parquet to disk</div></div>
+    <div class="asset-step"><div class="asset-num">4</div><div><strong>processed_train_data</strong> — pandas length-filter and null-drop on the training split</div></div>
+    <div class="asset-step"><div class="asset-num">5</div><div><strong>processed_test_data</strong> — same preprocessing applied to the test split</div></div>
+    <div class="asset-step"><div class="asset-num">6</div><div><strong>model_config</strong> — extracts and type-coerces training hyperparameters from config</div></div>
+    <div class="asset-step"><div class="asset-num">7</div><div><strong>pretrained_model_setup</strong> — downloads <code>bert-base-uncased</code> and saves tokenizer to disk</div></div>
+    <div class="asset-step"><div class="asset-num">8</div><div><strong>training_datasets</strong> — tokenises both splits and saves HuggingFace <code>Dataset</code> objects to disk</div></div>
+    <div class="asset-step"><div class="asset-num">9</div><div><strong>trained_model</strong> — fine-tunes BERT with <code>Trainer</code>, evaluates, saves model + <code>docs/eval_results.json</code></div></div>
     <p style="margin-top:14px; color:#506040; font-size:0.95rem;">You can re-materialise any single asset (e.g. just <code>trained_model</code>) without re-running the full DAG. Dagster handles dependency ordering automatically.</p>
+  </div>
+
+  <!-- RESULTS -->
+  <div class="card card-teal" id="results">
+    <h2>Results — real numbers from <code>docs/eval_results.json</code></h2>
+    <p style="color:#306050; font-size:0.93rem;">Measured on a real training run: bert-base-uncased, 1 epoch, CUDA GPU, 986 training samples, 249 test samples.</p>
+    <div class="metrics-row">
+      <div class="metric-box"><div class="metric-big">1.00</div><div class="metric-label">Accuracy</div></div>
+      <div class="metric-box"><div class="metric-big">1.00</div><div class="metric-label">F1 (weighted)</div></div>
+      <div class="metric-box"><div class="metric-big">0.01</div><div class="metric-label">Eval loss</div></div>
+      <div class="metric-box"><div class="metric-big">0.23</div><div class="metric-label">Train loss</div></div>
+    </div>
+    <table>
+      <tr><th>Metric</th><th>Value</th></tr>
+      <tr><td>Accuracy</td><td>1.00</td></tr>
+      <tr><td>F1 (weighted)</td><td>1.00</td></tr>
+      <tr><td>Precision (weighted)</td><td>1.00</td></tr>
+      <tr><td>Recall (weighted)</td><td>1.00</td></tr>
+      <tr><td>Eval loss</td><td>0.01</td></tr>
+      <tr><td>Train loss</td><td>0.2266</td></tr>
+      <tr><td>Training samples</td><td>986</td></tr>
+      <tr><td>Test samples</td><td>249</td></tr>
+      <tr><td>Epochs</td><td>1</td></tr>
+    </table>
+    <div class="note">The 1.00 accuracy is from a 249-sample test subset. BERT's pretraining gives it strong text understanding out of the box, and fine-tuning on even a small IMDB subset is enough to classify this particular slice perfectly. Results on the full 25k IMDB test set would be lower (typical BERT fine-tune: ~92–93%).</div>
   </div>
 
   <!-- TECH -->
@@ -128,9 +160,10 @@
       <tr><td>Dataset</td><td>IMDB sentiment via HuggingFace Hub</td></tr>
       <tr><td>Experiment tracking</td><td>MLflow (self-hosted, no API key)</td></tr>
       <tr><td>Serving</td><td>FastAPI + Uvicorn</td></tr>
-      <tr><td>Monitoring</td><td>Evidently, Prometheus</td></tr>
+      <tr><td>Monitoring</td><td>Prometheus (<code>prometheus-client</code>) — live <code>/metrics</code> endpoint</td></tr>
       <tr><td>Config</td><td><code>pydantic-settings</code> + YAML</td></tr>
     </table>
+    <p style="margin-top:10px; font-size:0.9rem; color:#606040;">Evidently was removed — it was listed in earlier versions but no Evidently code ran. Prometheus is wired with real counters and a scrape endpoint.</p>
     <p style="margin-top:14px;">
       <span class="tag">Python</span>
       <span class="tag">Dagster</span>
@@ -139,7 +172,7 @@
       <span class="tag">MLflow</span>
       <span class="tag">FastAPI</span>
       <span class="tag">Pydantic v2</span>
-      <span class="tag">Docker</span>
+      <span class="tag">Prometheus</span>
     </p>
   </div>
 
@@ -165,14 +198,24 @@ cp .env.example .env   # set MLFLOW_TRACKING_URI=./mlruns</pre>
     <table>
       <tr><th>Method</th><th>Path</th><th>What it does</th></tr>
       <tr><td><code>GET</code></td><td><code>/health</code></td><td>Liveness check + model load status</td></tr>
-      <tr><td><code>POST</code></td><td><code>/predict</code></td><td>Sentiment prediction — returns label + confidence score</td></tr>
-      <tr><td><code>POST</code></td><td><code>/train</code></td><td>Triggers the full Dagster pipeline (long-running)</td></tr>
+      <tr><td><code>GET</code></td><td><code>/metrics</code></td><td>Prometheus scrape endpoint (request counts, latency histogram)</td></tr>
+      <tr><td><code>POST</code></td><td><code>/predict</code></td><td>Sentiment prediction — returns label + confidence. Returns 503 if no model loaded.</td></tr>
+      <tr><td><code>POST</code></td><td><code>/train</code></td><td>Kicks off async pipeline run — returns <code>run_id</code> immediately, does not block</td></tr>
+      <tr><td><code>GET</code></td><td><code>/train/status/{run_id}</code></td><td>Poll training status: queued → running → success / failed</td></tr>
     </table>
-    <p style="margin-top:12px;"><strong>Example prediction:</strong></p>
+    <p style="margin-top:12px;"><strong>Async training pattern:</strong></p>
+    <pre>POST /train
+→ {"run_id": "abc-123", "status": "queued", "poll": "/train/status/abc-123"}
+
+GET /train/status/abc-123
+→ {"run_id": "abc-123", "status": "running", "started_at": "2026-05-22T18:28:17"}
+
+GET /train/status/abc-123   # after completion
+→ {"run_id": "abc-123", "status": "success", "finished_at": "2026-05-22T18:30:12"}</pre>
+    <p><strong>Example prediction:</strong></p>
     <pre>curl -X POST http://localhost:8000/predict \
   -H "Content-Type: application/json" \
-  -d '{"text": "This film was absolutely brilliant."}'</pre>
-    <p>Returns: <code>{"label": "positive", "score": 0.98, "model_version": "1"}</code></p>
+  -d '{"texts": ["This film was absolutely brilliant."], "return_probabilities": true}'</pre>
   </div>
 
   <!-- Q&A -->
@@ -207,7 +250,6 @@ cp .env.example .env   # set MLFLOW_TRACKING_URI=./mlruns</pre>
       <div class="details-body">
         <p><code>Trainer</code> handles gradient accumulation, mixed-precision, evaluation callbacks, checkpoint saving, and best-model selection — all with battle-tested defaults. A custom loop duplicates this with worse defaults and no community maintenance.</p>
         <p>Use a custom loop when you need unusual loss functions, custom schedulers, or multiple optimisers (e.g. GANs). For fine-tuning a standard BERT model, <code>Trainer</code> is the right tool.</p>
-        <p>This project kept a custom PyTorch loop in <code>_train_custom_model</code> to demonstrate the pattern — but the primary path uses <code>Trainer</code>.</p>
       </div>
     </details>
 
@@ -220,7 +262,7 @@ cp .env.example .env   # set MLFLOW_TRACKING_URI=./mlruns</pre>
           <li><strong>Metrics</strong> — train/val loss per epoch via <code>mlflow.log_metrics(step=epoch)</code></li>
           <li><strong>Artefacts</strong> — model weights, tokenizer config via <code>mlflow.log_artifacts</code></li>
         </ul>
-        <p>The MLflow UI at <code>localhost:5000</code> shows all runs, lets you compare loss curves, and download artefacts. The model registry versions and stages models (staging vs. production).</p>
+        <p>The MLflow UI at <code>localhost:5000</code> shows all runs, lets you compare loss curves, and download artefacts.</p>
       </div>
     </details>
 
@@ -238,20 +280,22 @@ cp .env.example .env   # set MLFLOW_TRACKING_URI=./mlruns</pre>
     <details>
       <summary><span class="arrow">▶</span> Is the /train endpoint safe for concurrent requests?</summary>
       <div class="details-body">
-        <p>No — it's a race condition. If two <code>/train</code> requests run concurrently, they will both try to write <code>pipeline.yaml</code> at the same time, corrupting the config.</p>
-        <p>In production, you'd queue training jobs (via Dagster's run queue or a message queue like Redis Queue) rather than triggering them synchronously via HTTP. The direct mutation is a deliberate simplification for local demo purposes.</p>
+        <p>Partially — <code>POST /train</code> now returns immediately using FastAPI <code>BackgroundTasks</code>, so it no longer blocks the server. Each call gets a unique <code>run_id</code>. However, concurrent training runs both write to <code>pipeline.yaml</code>, which is a race condition.</p>
+        <p>In production you would queue training jobs (via Dagster's run queue or a message queue like Redis) and enforce one active run at a time. The direct file mutation is a deliberate simplification for local demo purposes.</p>
       </div>
     </details>
 
     <details>
-      <summary><span class="arrow">▶</span> What monitoring would you add in production?</summary>
+      <summary><span class="arrow">▶</span> What monitoring is in place?</summary>
       <div class="details-body">
-        <p>Three layers:</p>
+        <p>Prometheus metrics are exposed at <code>GET /metrics</code> (standard scrape format):</p>
         <ul>
-          <li><strong>Infrastructure</strong> — Prometheus scraping request latency, error rate, and throughput. Already wired with <code>prometheus-client</code>.</li>
-          <li><strong>Data drift</strong> — Evidently monitoring input text distributions vs. the training distribution. Alert when drift exceeds a threshold.</li>
-          <li><strong>Model performance</strong> — periodically sample predictions, label them, recompute accuracy/F1. Trigger retraining if metrics degrade below a threshold.</li>
+          <li><code>predict_requests_total</code> — counter, increments on every <code>/predict</code> call</li>
+          <li><code>predict_errors_total</code> — counter, increments on prediction failures or 503s</li>
+          <li><code>train_requests_total</code> — counter, increments on every <code>/train</code> call</li>
+          <li><code>predict_latency_seconds</code> — histogram, measures per-request latency</li>
         </ul>
+        <p>Drift detection uses a KS-test implementation in <code>src/monitoring/drift_detector.py</code> (scipy-based). Evidently was originally listed but no Evidently code ran — it was removed.</p>
       </div>
     </details>
 
@@ -267,11 +311,12 @@ cp .env.example .env   # set MLFLOW_TRACKING_URI=./mlruns</pre>
   <!-- LIMITATIONS -->
   <div class="card card-warm" id="limits">
     <h2>Honest limitations</h2>
-    <div class="limitation-item">The <code>/train</code> endpoint is synchronous and not idempotent — concurrent calls will corrupt <code>pipeline.yaml</code>. Production fix: use a job queue.</div>
-    <div class="limitation-item">Model checkpoint paths are relative — the API will fail to load if started from a different working directory.</div>
-    <div class="limitation-item">Grid search is exhaustive — for large hyperparameter grids, Bayesian optimisation (Optuna) would be significantly faster.</div>
-    <div class="limitation-item">The <code>DataManager</code> class in <code>data_processor.py</code> is partially unused — designed for a custom model path that was later superseded by the Dagster asset pipeline.</div>
-    <div class="limitation-item">Two separate API files (<code>src/api.py</code> and <code>src/deployment/api.py</code>) — in a real project these would be merged.</div>
+    <div class="limitation-item"><strong>Local MLflow only</strong> — <code>mlruns/</code> is a local file store. Runs are not shared across machines and there is no distributed tracking server.</div>
+    <div class="limitation-item"><strong>No CI/CD pipeline</strong> — no automated test or deploy on push. Manual <code>uvicorn</code> start only.</div>
+    <div class="limitation-item"><strong>Benchmark dataset</strong> — IMDB is a well-known benchmark, not a domain dataset. The 1.0 accuracy is from a 249-sample test subset; results on the full 25k test set differ.</div>
+    <div class="limitation-item"><strong>Concurrent training race condition</strong> — if two <code>/train</code> calls run at the same time, both write to <code>pipeline.yaml</code> simultaneously. Production fix: a job queue with single-worker enforcement.</div>
+    <div class="limitation-item"><strong>In-memory training status</strong> — <code>train_runs</code> is a Python dict. All run history is lost when the API process restarts.</div>
+    <div class="limitation-item"><strong>Model reload on restart</strong> — after training completes the model is hot-reloaded in-process. If the API was started before any training, you must call <code>/train</code> first or restart the server after placing a model in <code>models/trained_model/</code>.</div>
   </div>
 
 </div>

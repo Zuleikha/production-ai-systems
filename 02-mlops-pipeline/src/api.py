@@ -1,19 +1,34 @@
 """FastAPI service for MLOps pipeline."""
+import uuid
 from contextlib import asynccontextmanager
+from datetime import datetime
+from typing import Any, Dict, List
 
-from fastapi import FastAPI, HTTPException
-from pydantic import BaseModel
-from typing import List, Dict, Any
 import torch
 import yaml
 import logging
 from pathlib import Path
-from datetime import datetime
+
+from fastapi import BackgroundTasks, FastAPI, HTTPException
+from prometheus_client import Counter, Histogram, generate_latest, CONTENT_TYPE_LATEST
+from fastapi.responses import Response
+from pydantic import BaseModel
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
+# ---------------------------------------------------------------------------
+# Prometheus metrics
+# ---------------------------------------------------------------------------
+PREDICT_REQUESTS = Counter("predict_requests_total", "Total /predict calls")
+PREDICT_ERRORS = Counter("predict_errors_total", "Total /predict errors")
+TRAIN_REQUESTS = Counter("train_requests_total", "Total /train calls")
+PREDICT_LATENCY = Histogram("predict_latency_seconds", "Prediction latency")
 
+
+# ---------------------------------------------------------------------------
+# Pydantic schemas
+# ---------------------------------------------------------------------------
 class PredictionRequest(BaseModel):
     texts: List[str]
     return_probabilities: bool = False
@@ -31,6 +46,9 @@ class TrainingRequest(BaseModel):
     batch_size: int = 16
 
 
+# ---------------------------------------------------------------------------
+# Model service
+# ---------------------------------------------------------------------------
 class ModelService:
     def __init__(self):
         self.model = None
@@ -93,10 +111,57 @@ class ModelService:
 
 model_service = ModelService()
 
+# ---------------------------------------------------------------------------
+# Background training state  (in-memory; resets on restart)
+# ---------------------------------------------------------------------------
+train_runs: Dict[str, Dict[str, Any]] = {}
 
+
+def _run_pipeline(run_id: str, config_path: Path, request: TrainingRequest) -> None:
+    """Blocking training work executed in a background thread."""
+    try:
+        train_runs[run_id]["status"] = "running"
+        train_runs[run_id]["started_at"] = datetime.now().isoformat()
+
+        from dagster import materialize
+        from src.dagster_definitions import all_assets
+
+        with open(config_path) as f:
+            config = yaml.safe_load(f)
+
+        config["data"]["huggingface"]["sample_size"] = request.sample_size
+        config["training"]["epochs"] = request.epochs
+        config["training"]["batch_size"] = request.batch_size
+
+        with open(config_path, "w") as f:
+            yaml.dump(config, f)
+
+        logger.info(f"[{run_id}] Starting training with {request.sample_size} samples…")
+        result = materialize(all_assets)
+
+        if result.success:
+            model_service.load_model()
+            train_runs[run_id]["status"] = "success"
+            train_runs[run_id]["finished_at"] = datetime.now().isoformat()
+            logger.info(f"[{run_id}] Training complete.")
+        else:
+            train_runs[run_id]["status"] = "failed"
+            train_runs[run_id]["error"] = "Dagster materialisation returned failure"
+            train_runs[run_id]["finished_at"] = datetime.now().isoformat()
+
+    except Exception as e:
+        logger.error(f"[{run_id}] Training failed: {e}")
+        train_runs[run_id]["status"] = "failed"
+        train_runs[run_id]["error"] = str(e)
+        train_runs[run_id]["finished_at"] = datetime.now().isoformat()
+
+
+# ---------------------------------------------------------------------------
+# App lifespan
+# ---------------------------------------------------------------------------
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    logger.info("Starting MLOps Pipeline API...")
+    logger.info("Starting MLOps Pipeline API…")
     if Path("models/trained_model").exists():
         model_service.load_model()
     else:
@@ -112,6 +177,9 @@ app = FastAPI(
 )
 
 
+# ---------------------------------------------------------------------------
+# Endpoints
+# ---------------------------------------------------------------------------
 @app.get("/")
 async def root():
     return {
@@ -132,63 +200,61 @@ async def health_check():
     }
 
 
+@app.get("/metrics")
+async def metrics():
+    """Prometheus metrics endpoint."""
+    return Response(generate_latest(), media_type=CONTENT_TYPE_LATEST)
+
+
 @app.post("/predict", response_model=PredictionResponse)
 async def predict(request: PredictionRequest):
+    PREDICT_REQUESTS.inc()
     if not model_service.model_loaded:
+        PREDICT_ERRORS.inc()
         raise HTTPException(
             status_code=503,
             detail="Model not loaded. Train a model first using /train.",
         )
     try:
-        predictions = model_service.predict(request.texts, request.return_probabilities)
+        with PREDICT_LATENCY.time():
+            predictions = model_service.predict(request.texts, request.return_probabilities)
         return PredictionResponse(
             predictions=predictions,
             model_info={"device": str(model_service.device), "model_path": "models/trained_model"},
         )
     except Exception as e:
+        PREDICT_ERRORS.inc()
         logger.error(f"Prediction failed: {e}")
         raise HTTPException(status_code=500, detail=str(e))
 
 
 @app.post("/train")
-async def train_model(request: TrainingRequest):
-    try:
-        from dagster import materialize
-        from src.dagster_definitions import all_assets
+async def train_model(request: TrainingRequest, background_tasks: BackgroundTasks):
+    """Kick off async training. Returns immediately with a run_id."""
+    TRAIN_REQUESTS.inc()
+    run_id = str(uuid.uuid4())
+    train_runs[run_id] = {
+        "run_id": run_id,
+        "status": "queued",
+        "queued_at": datetime.now().isoformat(),
+        "config": {
+            "dataset_name": request.dataset_name,
+            "sample_size": request.sample_size,
+            "epochs": request.epochs,
+            "batch_size": request.batch_size,
+        },
+    }
+    config_path = Path("config/pipeline.yaml")
+    background_tasks.add_task(_run_pipeline, run_id, config_path, request)
+    return {"run_id": run_id, "status": "queued", "poll": f"/train/status/{run_id}"}
 
-        config_path = Path("config/pipeline.yaml")
-        with open(config_path) as f:
-            config = yaml.safe_load(f)
 
-        config["data"]["huggingface"]["sample_size"] = request.sample_size
-        config["training"]["epochs"] = request.epochs
-        config["training"]["batch_size"] = request.batch_size
-
-        with open(config_path, "w") as f:
-            yaml.dump(config, f)
-
-        logger.info(f"Starting training with {request.sample_size} samples...")
-        result = materialize(all_assets)
-
-        if result.success:
-            model_service.load_model()
-            return {
-                "status": "success",
-                "message": "Model trained successfully",
-                "config": {
-                    "dataset_name": request.dataset_name,
-                    "sample_size": request.sample_size,
-                    "epochs": request.epochs,
-                    "batch_size": request.batch_size,
-                },
-            }
-        raise HTTPException(status_code=500, detail="Training failed")
-
-    except HTTPException:
-        raise
-    except Exception as e:
-        logger.error(f"Training failed: {e}")
-        raise HTTPException(status_code=500, detail=f"Training failed: {e}")
+@app.get("/train/status/{run_id}")
+async def train_status(run_id: str):
+    """Check the status of a training run."""
+    if run_id not in train_runs:
+        raise HTTPException(status_code=404, detail=f"run_id {run_id!r} not found.")
+    return train_runs[run_id]
 
 
 if __name__ == "__main__":

@@ -33,4 +33,4 @@ training:
   pretrained_model: bert-base-uncased
   task_type: classification
   validation_split: 0.2
-  warmup_steps: 500
+  warmup_steps: 100
