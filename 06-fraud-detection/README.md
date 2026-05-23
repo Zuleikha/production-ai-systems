@@ -36,8 +36,6 @@ All Optuna hyperparameter trials are logged to MLflow via DagsHub, recording par
 
 ![MLflow Experiments](docs/mlflow_screenshot.png)
 
-Live API: https://fraud-detection-api-5gno.onrender.com
-
 ---
 
 ## Tech Stack
@@ -79,10 +77,31 @@ fraud-detection-ml/
 │   ├── models/        # Serialised model artefacts (best_xgb.pkl)
 │   └── figures/       # SHAP plots and evaluation charts
 ├── tests/
-│   └── test_predict.py
+│   ├── conftest.py        # Shared fixtures and helpers
+│   ├── test_predict.py    # Unit tests for src/predict.py (mocked model)
+│   ├── test_features.py   # Unit tests for src/features.py (no model needed)
+│   └── test_api.py        # Integration tests for api/main.py endpoints
 ├── requirements.txt
-└── render.yaml        # Render deployment config
+├── pytest.ini             # Test runner config (testpaths, pythonpath)
+└── render.yaml            # Render deployment config
 ```
+
+---
+
+## Running Tests
+
+The test suite uses **pytest** and covers input validation, core feature logic, threshold behaviour, and all API endpoints.
+
+```bash
+# install dependencies first (see below), then:
+pytest tests/ -v
+```
+
+| File | What it covers |
+|---|---|
+| `test_predict.py` | Response shape, threshold boundary, error handling — model is mocked |
+| `test_features.py` | Time features, velocity windows, preprocessor — no model or data files needed |
+| `test_api.py` | `/health` and `/predict` endpoints, Pydantic validation (422 on bad input) |
 
 ---
 
