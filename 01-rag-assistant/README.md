@@ -72,6 +72,8 @@ docker compose up --build
 
 API → `localhost:8000` · Frontend → `localhost:8501` · Swagger → `localhost:8000/docs`
 
+**Live deployment:** https://rag-assistant-v10v.onrender.com
+
 **Required environment variables:**
 
 | Variable | Required | Description |
