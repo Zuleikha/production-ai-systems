@@ -101,6 +101,9 @@ class ObjectDetector:
         self.nms_threshold = nms_threshold
         self.inference_times: List[float] = []
 
+        # GPU inference is 10-30x faster than CPU for Faster R-CNN due to parallel convolution
+        # operations in the ResNet backbone and FPN; logging this at startup makes it easy
+        # to catch misconfigured environments where CUDA is expected but falls back silently.
         self.device = (
             torch.device("cuda" if torch.cuda.is_available() else "cpu")
             if device == "auto"
@@ -121,12 +124,22 @@ class ObjectDetector:
 
     def preprocess_image(self, image: np.ndarray) -> torch.Tensor:
         """Convert a BGR numpy image to a normalised tensor batch."""
+        # OpenCV stores pixels as BGR (Blue-Green-Red) because that was the convention inherited
+        # from early camera hardware. PyTorch and torchvision models are trained on RGB images
+        # (Red-Green-Blue), so feeding BGR directly would swap the red and blue channels, causing
+        # systematically wrong colour statistics and degraded detection accuracy.
         image_rgb = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
         tensor = self.transform(image_rgb)
         return tensor.unsqueeze(0).to(self.device)
 
     def apply_nms(self, boxes: np.ndarray, scores: np.ndarray) -> np.ndarray:
         """Apply torchvision NMS and return surviving indices."""
+        # NMS (Non-Maximum Suppression) removes duplicate boxes for the same object by
+        # discarding any box whose IoU overlap with a higher-scoring box exceeds the threshold.
+        # The API sets this to 0.2 rather than the typical 0.4: at 0.4, overlapping boxes on
+        # partially occluded objects survive; at 0.2 they are suppressed more aggressively,
+        # producing cleaner output at the cost of occasionally merging two genuinely distinct
+        # objects that happen to overlap (e.g. a person standing behind a car).
         keep = torchvision.ops.nms(
             torch.from_numpy(boxes),
             torch.from_numpy(scores),

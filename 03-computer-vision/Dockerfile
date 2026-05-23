@@ -1,3 +1,6 @@
+# python:3.11-slim omits compilers, test tools, and most documentation that ship in the full
+# python:3.11 image, cutting the final image size from ~1 GB to ~130 MB. The OpenCV runtime
+# deps below (libgl1-mesa-dev etc.) are the only system libraries this service actually needs.
 FROM python:3.11-slim
 
 WORKDIR /app
@@ -16,4 +19,4 @@ RUN pip install --no-cache-dir -r requirements.txt
 COPY . .
 RUN mkdir -p models
 EXPOSE 8000
-CMD ["python", "src/api/main.py"]
+CMD ["uvicorn", "src.api.main:app", "--host", "0.0.0.0", "--port", "8000"]
