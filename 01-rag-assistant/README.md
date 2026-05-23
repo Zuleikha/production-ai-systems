@@ -115,6 +115,19 @@ Response: `answer`, cited `sources` with rerank scores, `tokens_used`, per-stage
 pytest tests/ -v
 ```
 
+129 tests, no API keys required — all external calls (OpenAI, Pinecone, Cohere) are mocked.
+
+| Test file | Tests | What it covers |
+|---|---|---|
+| `test_chunker.py` | 9 | Sentence splitting, token counting, overlap, metadata |
+| `test_pipeline.py` | 9 | Orchestration, conversation history, empty-store path |
+| `test_retriever.py` | 14 | RRF score formula (k=60, additivity, deduplication), BM25 integration |
+| `test_reranker.py` | 9 | No-key fallback, API failure fallback, rerank ordering, metadata preservation |
+| `test_generator.py` | 12 | Context formatting, message building, history truncation, mocked generation |
+| `test_metrics.py` | 14 | Accumulation, averages, rolling-window cap, `to_dict`, singleton |
+| `test_api.py` | 33 | All routes — status codes, input validation boundaries, response shapes |
+| `test_ingestor.py` | 20 | PDF extraction, file/directory ingestion, error isolation, chunk metadata |
+
 ## Project structure
 
 ```
@@ -138,10 +151,18 @@ pytest tests/ -v
 │   │   └── metrics.py       # structlog + in-memory metrics
 │   └── app.py               # Streamlit frontend
 ├── tests/
-│   ├── test_chunker.py
-│   └── test_pipeline.py
+│   ├── conftest.py          # CI-safe env setup, metrics reset fixture
+│   ├── test_chunker.py      # SentenceAwareChunker unit tests
+│   ├── test_pipeline.py     # RAGPipeline integration tests (mocked)
+│   ├── test_retriever.py    # HybridRetriever RRF logic + integration
+│   ├── test_reranker.py     # CohereReranker fallback + API paths
+│   ├── test_generator.py    # RAGGenerator formatting + mocked generate()
+│   ├── test_metrics.py      # RequestMetrics accumulation and to_dict
+│   ├── test_api.py          # FastAPI route tests (mocked pipeline)
+│   └── test_ingestor.py     # DocumentIngestor PDF + file + directory
 ├── data/
 │   └── raw/                 # Drop source documents here
+├── pytest.ini
 ├── docker-compose.yml
 ├── Dockerfile
 └── requirements.txt
