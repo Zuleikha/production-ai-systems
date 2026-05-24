@@ -4,6 +4,7 @@ Prediction logic — loads the model once at startup, scores new transactions.
 Separated from app/main.py so it can be unit-tested without starting a server.
 """
 import joblib
+import json
 import pandas as pd
 import yaml
 from pathlib import Path
@@ -36,7 +37,7 @@ def predict(transaction: dict) -> dict:
 
     df = pd.DataFrame([transaction])
     prob = float(_model.predict_proba(df)[:, 1][0])
-    threshold = _config["prediction"]["threshold"]
+    threshold = json.loads(Path("outputs/models/bundle_v1/threshold.json").read_text())["threshold"]
 
     return {
         "fraud_probability": round(prob, 4),

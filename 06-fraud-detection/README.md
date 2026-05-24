@@ -2,177 +2,71 @@
 
 [![Python](https://img.shields.io/badge/Python-3.11+-3776AB?logo=python&logoColor=white)](https://python.org)
 [![XGBoost](https://img.shields.io/badge/XGBoost-2.0+-189EBF)](https://xgboost.readthedocs.io)
-[![scikit-learn](https://img.shields.io/badge/scikit--learn-1.4+-F7931E?logo=scikit-learn&logoColor=white)](https://scikit-learn.org)
 [![FastAPI](https://img.shields.io/badge/FastAPI-0.111+-009688?logo=fastapi&logoColor=white)](https://fastapi.tiangolo.com)
 [![MLflow](https://img.shields.io/badge/MLflow-tracked-0194E2?logo=mlflow&logoColor=white)](https://mlflow.org)
 [![Deployed on Render](https://img.shields.io/badge/Deployed%20on-Render-46E3B7?logo=render&logoColor=white)](https://fraud-detection-api-5gno.onrender.com)
 
-End-to-end machine learning pipeline for real-time payment fraud detection. Built on 284,807 real credit card transactions with extreme class imbalance (575:1). Full production system from exploratory analysis to deployed REST API.
-
-## Pipeline Overview
-
-`01 EDA` → `02 Baseline` → `03 Imbalance Handling` → `04 XGBoost + Optuna` → `05 SHAP` → `06 Threshold Tuning` → `07 API Deployment`
+End-to-end machine learning system for real-time credit card fraud detection. Trained on 284,807 transactions with a 575:1 class imbalance. Deployed as a REST API.
 
 ---
 
-## Results
+## What It Does
 
-| Stage | Model | PR-AUC |
-|---|---|---|
-| Baseline | Logistic Regression (default) | 0.73 |
-| Imbalance handling | Logistic Regression + SMOTE | 0.76 |
-| Gradient boosting | XGBoost (default) | 0.82 |
-| **Tuned** | **XGBoost + Optuna (150 trials)** | **0.88** |
+Scores a payment transaction for fraud risk using an XGBoost classifier. Returns a fraud probability, a binary prediction, and the threshold used. The full pipeline covers exploratory analysis, imbalance handling, Optuna hyperparameter tuning, SHAP explainability, threshold analysis, and production deployment.
 
-Threshold was further optimised from the default 0.5 down to **0.28** using a business cost matrix (a missed fraud costs ~10× more than a false block), improving recall on the held-out test set without a significant drop in precision.
+**Pipeline:** `EDA → Baseline → Imbalance Handling → XGBoost + Optuna → SHAP → Threshold Analysis → API Deployment`
 
 ---
 
-## Experiment Tracking
+## Model Performance
 
-All Optuna hyperparameter trials are logged to MLflow via DagsHub, recording parameters, PR-AUC, and artefact paths for every run — making it straightforward to compare runs and reproduce the best model.
+Model: XGBoost, tuned with Optuna (150 trials), evaluated at threshold **0.28** on a held-out test set of 56,962 transactions.
 
-**Live MLflow UI:** https://dagshub.com/Zuleikha/fraud-detection-ML-project.mlflow
+| Metric | Value |
+|---|---|
+| PR-AUC | 0.8828 |
+| ROC-AUC | 0.9807 |
+| Precision | 81.6% |
+| Recall | 85.7% |
+| F1 Score | 83.6% |
+| Fraud caught | 84 / 98 (85.7%) |
+| False alarms | 19 |
+| Transactions flagged | 0.18% |
 
-![MLflow Experiments](docs/mlflow_screenshot.png)
+For threshold selection rationale and full model decisions, see [DECISIONS.md](DECISIONS.md).
 
 ---
 
 ## Tech Stack
 
-| Layer | Libraries |
+| Layer | Tools |
 |---|---|
-| Data & features | pandas, NumPy, scikit-learn, imbalanced-learn |
-| Modelling | XGBoost, Optuna |
+| Data & features | pandas, NumPy, scikit-learn |
+| Modelling | XGBoost, Optuna, imbalanced-learn |
 | Explainability | SHAP |
-| Experiment tracking | MLflow |
+| Experiment tracking | MLflow + DagsHub |
 | API | FastAPI, Uvicorn, Pydantic |
 | Testing | pytest, httpx |
-| Deployment | Render (Docker-less, via `render.yaml`) |
-
----
-
-## Project Structure
-
-```
-fraud-detection-ml/
-├── notebooks/
-│   ├── 01_eda.ipynb                  # Exploratory analysis — class imbalance, feature distributions
-│   ├── 02_baseline_model.ipynb       # Logistic regression baseline to beat (PR-AUC 0.73)
-│   ├── 03_imbalance_handling.ipynb   # SMOTE, undersampling, class weights comparison
-│   ├── 04_xgboost_tuning.ipynb       # XGBoost + Optuna (150 trials) logged to MLflow
-│   ├── 05_shap_explainability.ipynb  # SHAP summary/waterfall plots for the best model
-│   ├── 06_threshold_tuning.ipynb     # Cost-matrix threshold sweep → threshold = 0.28
-│   └── 07_api_and_deployment.ipynb   # FastAPI smoke-test and Render deployment walkthrough
-├── src/
-│   ├── features.py    # Feature engineering (time features, velocity windows, preprocessor)
-│   ├── train.py       # Model training pipeline
-│   └── predict.py     # Inference helpers
-├── app/
-│   └── main.py        # FastAPI app (30 named features, threshold-aware /predict)
-├── api/
-│   └── main.py        # Alternative minimal API endpoint
-├── docs/              # Markdown study notes (01 → 07), matching each notebook
-├── outputs/
-│   ├── models/        # Serialised model artefacts (best_xgb.pkl)
-│   └── figures/       # SHAP plots and evaluation charts
-├── tests/
-│   ├── conftest.py        # Shared fixtures and helpers
-│   ├── test_predict.py    # Unit tests for src/predict.py (mocked model)
-│   ├── test_features.py   # Unit tests for src/features.py (no model needed)
-│   └── test_api.py        # Integration tests for api/main.py endpoints
-├── requirements.txt
-├── pytest.ini             # Test runner config (testpaths, pythonpath)
-└── render.yaml            # Render deployment config
-```
-
----
-
-## Running Tests
-
-The test suite uses **pytest** and covers input validation, core feature logic, threshold behaviour, and all API endpoints.
-
-```bash
-# install dependencies first (see below), then:
-pytest tests/ -v
-```
-
-| File | What it covers |
-|---|---|
-| `test_predict.py` | Response shape, threshold boundary, error handling — model is mocked |
-| `test_features.py` | Time features, velocity windows, preprocessor — no model or data files needed |
-| `test_api.py` | `/health` and `/predict` endpoints, Pydantic validation (422 on bad input) |
-
----
-
-## How to Run Locally
-
-### 1. Clone and create a virtual environment
-
-```bash
-git clone https://github.com/Zuleikha/fraud-detection-ML-project.git
-cd fraud-detection-ml
-
-python -m venv .venv
-# macOS / Linux
-source .venv/bin/activate
-# Windows
-.venv\Scripts\activate
-```
-
-### 2. Install dependencies
-
-```bash
-pip install -r requirements.txt
-```
-
-### 3. Download the dataset from Kaggle
-
-The project uses the [Credit Card Fraud Detection](https://www.kaggle.com/datasets/mlg-ulb/creditcardfraud) dataset.
-
-```bash
-# Install the Kaggle CLI if you haven't already
-pip install kaggle
-
-# Place your kaggle.json API token in ~/.kaggle/ then run:
-kaggle datasets download -d mlg-ulb/creditcardfraud -p data/raw/ --unzip
-```
-
-The file `data/raw/creditcard.csv` should now exist (~144 MB).
-
-### 4. Run the notebooks in order
-
-Launch Jupyter and open each notebook in sequence:
-
-```bash
-jupyter notebook notebooks/
-```
-
-Run them in order: `01` → `02` → `03` → `04` → `05` → `06` → `07`.
-Each notebook saves its outputs (models, figures) to `outputs/` for the next to consume.
-
-### 5. Start the API locally
-
-```bash
-uvicorn app.main:app --reload
-```
-
-The API will be available at `http://localhost:8000`. Interactive docs at `http://localhost:8000/docs`.
+| Deployment | Render |
 
 ---
 
 ## Live API
 
-The model is deployed on Render:
-
-**Base URL:** `https://fraud-detection-api-5gno.onrender.com`
+**Interactive docs:** [https://fraud-detection-api-5gno.onrender.com/docs](https://fraud-detection-api-5gno.onrender.com/docs)
 
 | Endpoint | Method | Description |
 |---|---|---|
 | `/health` | GET | Health check |
 | `/predict` | POST | Returns fraud probability and binary prediction |
 
-### Example — predict a transaction
+**Input data format**
+
+> **Important:** This API expects data in the same format as the [Kaggle Credit Card Fraud Detection dataset](https://www.kaggle.com/datasets/mlg-ulb/creditcardfraud). The 28 features V1–V28 are PCA components — they are not raw transaction fields such as merchant, card number, or location. Raw bank transaction data cannot be sent directly. It must first be transformed using the same PCA fitted on the original dataset to produce the V1–V28 components. The two additional fields are derived as follows:
+> - `log_amount` — `log1p(transaction_amount)`
+> - `hour_of_day` — hour extracted from the transaction timestamp (0–23)
+
+**Example request:**
 
 ```bash
 curl -s -X POST https://fraud-detection-api-5gno.onrender.com/predict \
@@ -199,10 +93,56 @@ curl -s -X POST https://fraud-detection-api-5gno.onrender.com/predict \
 }
 ```
 
-> **Note:** Render free-tier instances spin down after inactivity. The first request may take up to 30 seconds while the instance wakes up.
+> Render free-tier instances spin down after inactivity. The first request may take up to 30 seconds.
 
 ---
 
-## GitHub Repository
+## Run Locally
 
-[https://github.com/Zuleikha/fraud-detection-ML-project](https://github.com/Zuleikha/fraud-detection-ML-project)
+**1. Clone and install**
+
+```bash
+git clone https://github.com/Zuleikha/fraud-detection-ML-project.git
+cd fraud-detection-ml
+python -m venv .venv
+source .venv/bin/activate        # Windows: .venv\Scripts\activate
+pip install -r requirements.txt
+```
+
+**2. Download the dataset**
+
+```bash
+pip install kaggle
+kaggle datasets download -d mlg-ulb/creditcardfraud -p data/raw/ --unzip
+```
+
+**3. Run the notebooks in order** (01 → 07) to reproduce training and generate model artefacts.
+
+```bash
+jupyter notebook notebooks/
+```
+
+**4. Start the API**
+
+```bash
+uvicorn app.main:app --reload
+```
+
+Docs available at `http://localhost:8000/docs`.
+
+---
+
+## Run Tests
+
+```bash
+pytest tests/ -v
+```
+
+Covers API endpoints, threshold boundary logic, feature engineering, and input validation.
+
+---
+
+## Experiment Tracking
+
+All Optuna trials logged to MLflow via DagsHub:
+[https://dagshub.com/Zuleikha/fraud-detection-ML-project.mlflow](https://dagshub.com/Zuleikha/fraud-detection-ML-project.mlflow)

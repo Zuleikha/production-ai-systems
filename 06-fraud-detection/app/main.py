@@ -2,11 +2,12 @@ from fastapi import FastAPI
 from pydantic import BaseModel
 import pandas as pd
 import joblib
+import json
 from pathlib import Path
 
 app   = FastAPI(title="Fraud Detection API", version="1.0")
 MODEL = joblib.load(Path("outputs/models/best_xgb.pkl"))
-THRESHOLD = 0.28
+THRESHOLD = json.loads(Path("outputs/models/bundle_v1/threshold.json").read_text())["threshold"]
 
 
 class Transaction(BaseModel):
